@@ -1,5 +1,5 @@
-FROM otel/opentelemetry-collector-contrib AS otel
-FROM debian:12-slim@sha256:90522eeb7e5923ee2b871c639059537b30521272f10ca86fdbbbb2b75a8c40cd
+FROM otel/opentelemetry-collector-contrib@sha256:e94cfd92357aa21f4101dda3c0c01f90e6f24115ba91b263c4d09fed7911ae68 AS otel
+FROM debian:12-slim@sha256:90522eeb7e5923ee2b871c639059537b30521272f10ca86fdbbbb2b75a8c40cd AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
@@ -16,7 +16,7 @@ COPY --from=otel /otelcol-contrib /otelcol-contrib
 COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
 
 # Install some stuff to extract archives (procps isn't required)
-RUN apt update && apt-get install -y xz-utils tar wget curl ca-certificates 7zip
+RUN apt update && apt-get update && apt-get install -y xz-utils tar wget curl ca-certificates 7zip
 # Clean up apt lists
 RUN rm -rf /var/lib/apt/lists/*
 
