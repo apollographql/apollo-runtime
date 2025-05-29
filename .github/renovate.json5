@@ -2,7 +2,6 @@
   extends: [
     'github>apollographql/renovate-config-apollo-open-source:default.json5',
   ],
-  minimumReleaseAge: '3 days',
   customManagers: [
     {
       customType: 'regex',
@@ -25,5 +24,9 @@
         groupSlug: 'gha-digests',
       },
     },
+    {
+      "matchPackageNames": ["apollographql/router", "apollographql/apollo-mcp-server"],
+      "automerge": true
+    }
   ],
 }
