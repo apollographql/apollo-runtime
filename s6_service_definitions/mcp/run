@@ -3,12 +3,18 @@
 # Set our working directory
 cd /dist || exit
 
-ARGS=(--endpoint http://127.0.0.1:4000 --introspection --sse-address 0.0.0.0 --sse-port 5001)
+ARGS=(--endpoint http://127.0.0.1:4000 --sse-address 0.0.0.0 --sse-port 5001)
 
 if [[ -z "$APOLLO_GRAPH_REF" || -z "$APOLLO_KEY" ]]; then
-  ARGS+=(--schema /dist/schema.graphql)
+  ARGS+=(--schema /dist/api_schema.graphql)
 else
   ARGS+=(--uplink)
+fi
+
+if [ -n "$(ls -A /dist/operations 2>/dev/null)" ]; then
+  ARGS+=( --directory /dist/operations --operations )
+else
+  ARGS+=(--introspection)
 fi
 
 exec /dist/apollo-mcp-server "${ARGS[@]}"

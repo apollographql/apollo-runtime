@@ -4,7 +4,7 @@ FROM debian:12-slim@sha256:90522eeb7e5923ee2b871c639059537b30521272f10ca86fdbbbb
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
-ARG ROUTER_VERSION=2.1.2
+ARG ROUTER_VERSION=2.2.1
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG MCP_SERVER_VERSION=0.2.1
 ARG TARGETARCH
@@ -15,7 +15,7 @@ WORKDIR /dist
 COPY --from=otel /otelcol-contrib /otelcol-contrib
 COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
 
-# Install some stuff to extract archives (procps isn't required)
+# Install dependencies to aid build
 RUN apt update && apt-get update && apt-get install -y xz-utils tar wget curl ca-certificates 7zip
 # Clean up apt lists
 RUN rm -rf /var/lib/apt/lists/*
@@ -60,8 +60,11 @@ RUN curl -sSL "https://mcp.apollo.dev/download/nix/v${MCP_SERVER_VERSION}" | sh
 # Install our mcp service definition
 ADD s6_service_definitions/mcp /etc/s6-overlay/s6-rc.d/mcp
 
+# Create a folder for operations
+RUN mkdir -p /dist/operations
+
 # Let s6 know about our mcp service
 RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/mcp
 
-# Use the s6 init process to control our service
+# Use the s6 init process to control our services
 ENTRYPOINT ["/init"]
