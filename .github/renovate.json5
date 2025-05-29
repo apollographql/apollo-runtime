@@ -1,0 +1,29 @@
+{
+  extends: [
+    'github>apollographql/renovate-config-apollo-open-source:default.json5',
+  ],
+  minimumReleaseAge: '3 days',
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '//(^|/|\\.)([Dd]ocker|[Cc]ontainer)file$//',
+        '//(^|/)([Dd]ocker|[Cc]ontainer)file[^/]*$//',
+      ],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))?(?: extractVersion=(?<extractVersion>.*))?(?:^|\\r\\n|\\r|\\n|$)(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)(?:^|\\r\\n|\\r|\\n|$)',
+      ],
+    }
+  ],
+  packageRules: [
+    {
+      matchManagers: [
+        'github-actions',
+      ],
+      digest: {
+        groupName: 'GitHub Actions Digests',
+        groupSlug: 'gha-digests',
+      },
+    },
+  ],
+}

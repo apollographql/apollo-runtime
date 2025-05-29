@@ -1,0 +1,8 @@
+supergraph:
+  # The socket address and port to listen on
+  listen: 0.0.0.0:4000
+  # Allows an MCP server to use its introspect tool on our graph
+  introspection: true
+# Helps an MCP server to figure out what may be going wrong with queries
+include_subgraph_errors:
+  all: true
