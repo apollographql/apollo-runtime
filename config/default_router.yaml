@@ -6,3 +6,9 @@ supergraph:
 # Helps an MCP server to figure out what may be going wrong with queries
 include_subgraph_errors:
   all: true
+telemetry:
+  exporters:
+    logging:
+      stdout:
+        enabled: true
+        format: text
