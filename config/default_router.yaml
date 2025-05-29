@@ -1,0 +1,15 @@
+supergraph:
+  # The socket address and port to listen on
+  listen: 0.0.0.0:4000
+  # Allows an MCP server to use its introspect tool on our graph
+  introspection: true
+# Helps an MCP server to figure out what may be going wrong with queries
+include_subgraph_errors:
+  all: true
+# This is because the MCP server doesn't support json output. When it does, remove this.
+telemetry:
+  exporters:
+    logging:
+      stdout:
+        enabled: true
+        format: text
