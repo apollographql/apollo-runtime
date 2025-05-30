@@ -25,7 +25,7 @@
       },
     },
     {
-      "matchPackageNames": ["apollographql/router", "apollographql/apollo-mcp-server"],
+      "matchPackageNames": ["apollographql/router"],
       "automerge": true
     }
   ],
