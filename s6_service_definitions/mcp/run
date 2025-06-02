@@ -1,15 +1,15 @@
 #!/command/with-contenv bash
 
 # Set our working directory
-cd /dist || exit
+cd /opt || exit
 
-ARGS=(--endpoint http://127.0.0.1:4000 --sse-address 0.0.0.0 --sse-port 5001 --directory /dist --operations /dist/operations --introspection)
+ARGS=(--endpoint http://127.0.0.1:4000 --sse-address 0.0.0.0 --sse-port 5001 --operations /config/operations --introspection)
 
 if [[ -z "$APOLLO_GRAPH_REF" || -z "$APOLLO_KEY" ]]; then
-  ARGS+=(--schema /dist/api_schema.graphql)
+  ARGS+=(--schema /config/api_schema.graphql)
 else
   ARGS+=(--uplink)
 fi
 
-exec /dist/apollo-mcp-server "${ARGS[@]}"
+exec /opt/apollo-mcp-server "${ARGS[@]}"
 

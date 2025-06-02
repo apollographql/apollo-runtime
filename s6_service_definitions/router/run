@@ -1,15 +1,15 @@
 #!/command/with-contenv bash
 
 # Set our working directory
-cd /dist || exit
+cd /opt || exit
 
-ARGS=(--config /dist/config.yaml)
+ARGS=(--config /config/router_config.yaml)
 
 if [[ -z "$APOLLO_GRAPH_REF" || -z "$APOLLO_KEY" ]]; then
-  ARGS+=(--supergraph /dist/schema.graphql)
+  ARGS+=(--supergraph /config/schema.graphql)
 fi
 if [[ -n "$DEV_MODE" ]]; then
   ARGS+=(--dev)
 fi
 
-exec /dist/router "${ARGS[@]}"
+exec /opt/router "${ARGS[@]}"
