@@ -73,5 +73,8 @@ RUN mkdir -p /config/operations
 # Let s6 know about our mcp service
 RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/mcp
 
+# Add a Health Check To Ensure The Router Is Running Properly
+HEALTHCHECK --timeout=3s CMD curl -sf http://localhost:8088/health || exit 1
+
 # Use the s6 init process to control our services
 ENTRYPOINT ["/init"]
