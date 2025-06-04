@@ -1,0 +1,57 @@
+supergraph:
+  # The socket address and port to listen on
+  listen: 0.0.0.0:4000
+  # Allows an MCP server to use its introspect tool on our graph
+  introspection: true
+telemetry:
+  # Add the instruments to support the custom grafana dashboard
+  instrumentation:
+    instruments:
+      router:
+        http.server.request.duration:
+          attributes:
+            http.response.status_code: true
+            graphql.errors:
+              on_graphql_error: true
+      subgraph:
+        http.client.request.duration:
+          attributes:
+            subgraph.name: true
+            http.response.status_code:
+              subgraph_response_status: code
+            graphql.errors:
+              subgraph_on_graphql_error: true
+        http.client.request.body.size:
+          attributes:
+            subgraph.name: true
+      connector:
+        http.client.request.body.size: true
+        http.client.request.duration: true
+        http.client.response.body.size: true
+  # Export metrics/traces to our local otel collector
+  exporters:
+    metrics:
+      otlp:
+        # Enable the OpenTelemetry exporter
+        enabled: true
+        endpoint: grafana:4317
+    tracing:
+      common:
+        service_name: all-in-one:router
+      otlp:
+        # Enable the OpenTelemetry exporter
+        enabled: true
+        endpoint: grafana:4317
+        batch_processor:
+          # default 5s
+          scheduled_delay: 10s
+          # default 1
+          max_concurrent_exports: 20
+          # default 512
+          max_export_batch_size: 2048
+          max_export_timeout: 30s
+          # default 2048
+          max_queue_size: 8192
+# Helps an MCP server to figure out what may be going wrong with queries
+include_subgraph_errors:
+  all: true

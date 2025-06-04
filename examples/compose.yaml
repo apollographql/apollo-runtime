@@ -1,0 +1,23 @@
+name: "Apollo Runtime & Grafana"
+services:
+  runtime:
+    build: ..
+    ports:
+      - "4000:4000"
+      - "5001:5000"
+    volumes:
+      - type: bind
+        source: ./router_config.yaml
+        target: /config/router_config.yaml
+    environment:
+      APOLLO_KEY: ${APOLLO_KEY}
+      APOLLO_GRAPH_REF: ${APOLLO_GRAPH_REF}
+      DEV_MODE: 1
+      MCP_INTROSPECTION: 1
+      MCP_ENABLE: 1
+    depends_on:
+      - grafana
+  grafana:
+    image: "grafana/otel-lgtm"
+    ports:
+      - "3000:3000"
