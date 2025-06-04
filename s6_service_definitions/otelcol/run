@@ -1,0 +1,11 @@
+#!/command/with-contenv sh
+
+# Set our working directory
+cd /opt || exit
+
+if [ -f /config/otel-config.yaml ]; then
+  exec ./otelcol-contrib --config /config/otel-config.yaml
+else
+  echo "No OTEL config provided at /config/otel-config.yaml, otelcol has not started"
+  while true; do sleep 10000; done
+fi

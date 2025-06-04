@@ -30,6 +30,10 @@ telemetry:
         http.client.response.body.size: true
   # Export metrics/traces to our local otel collector
   exporters:
+    logging:
+      stdout:
+        enabled: true
+        format: text
     metrics:
       otlp:
         # Enable the OpenTelemetry exporter
@@ -37,7 +41,7 @@ telemetry:
         endpoint: grafana:4317
     tracing:
       common:
-        service_name: all-in-one:router
+        service_name: runtime-all-in-one:router
       otlp:
         # Enable the OpenTelemetry exporter
         enabled: true
