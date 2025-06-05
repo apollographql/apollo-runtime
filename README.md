@@ -40,7 +40,15 @@ The MCP Server included in this container is currently experimental and as such 
 environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
 
 If you wish to enable it for testing purposes then set the environment variable `ENABLE_MCP_SERVER` when running the 
-container, and map container port 5001 to allow SSE access.
+container, and map container port 5001 to a local port for the MCP server to listen on. This can be achieved by passing 
+the following flags to `docker run`.
+
+```shell
+...
+--env ENABLE_MCP_SERVER=1
+-p 5001:5001
+...
+```
 
 ## Configuring Using Local Files
 
