@@ -29,12 +29,18 @@ docker run \
 --env APOLLO_KEY="your key here" \
 --rm \
 -p 4000:4000 \
--p 5001:5001 \
 ghcr.io/apollographql/runtime-all-in-one:latest
 ```
 We open two ports in the above command:
 - 4000 is where the router is listening. Make your GraphQL queries here.
-- 50001 is where the MCP server is listening. You can use the SSE protocol to connect your agent or MCP inspector at http://localhost:5001/sse
+
+### Running the MCP Server
+
+The MCP Server included in this container is currently experimental and as such **should not be used in a production 
+environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
+
+If you wish to enable it for testing purposes then set the environment variable `ENABLE_MCP_SERVER` when running the 
+container, and map container port 5001 to allow SSE access.
 
 ## Configuring Using Local Files
 
