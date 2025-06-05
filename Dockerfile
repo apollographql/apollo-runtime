@@ -1,24 +1,30 @@
 FROM otel/opentelemetry-collector-contrib@sha256:e94cfd92357aa21f4101dda3c0c01f90e6f24115ba91b263c4d09fed7911ae68 AS otel
-FROM debian:12-slim@sha256:90522eeb7e5923ee2b871c639059537b30521272f10ca86fdbbbb2b75a8c40cd AS final
+FROM almalinux:10-minimal@sha256:ae1b7fe96fd267d82e34a7086149177e2cc8192519515f27f39e9463a9b79eb7 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
-ARG ROUTER_VERSION=2.2.1
+ARG APOLLO_ROUTER_VERSION=2.2.1
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
-ARG MCP_SERVER_VERSION=0.2.1
+ARG APOLLO_MCP_SERVER_VERSION=0.2.1
+
+LABEL org.opencontainers.image.version=0.0.1
+LABEL org.opencontainers.image.vendor="Apollo GraphQL"
+LABEL org.opencontainers.image.title="Apollo Runtime"
+LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
+LABEL com.apollographql.router.version=$APOLLO_ROUTER_VERSION
+LABEL com.apollographql.mcp-server.version=$APOLLO_MCP_SERVER_VERSION
+
 ARG TARGETARCH
 USER root
-WORKDIR /dist
+WORKDIR /opt
 
 # Copy our otel bits into our final image
 COPY --from=otel /otelcol-contrib /otelcol-contrib
 COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
 
 # Install dependencies to aid build
-RUN apt update && apt-get update && apt-get install -y xz-utils tar wget curl ca-certificates 7zip
-# Clean up apt lists
-RUN rm -rf /var/lib/apt/lists/*
+RUN microdnf install -y tar xz wget which gzip
 
 # Add all the s6 init supervise stuff.
 # Firstly download the no-arch bits
@@ -43,10 +49,11 @@ RUN case $TARGETARCH in \
 RUN tar -C / -Jxpf /tmp/s6.tar.xz && rm -r /tmp/s6.tar.xz
 
 # Download the router binary
-RUN curl -sSL "https://router.apollo.dev/download/nix/v${ROUTER_VERSION}" | sh
+RUN curl -sSL "https://router.apollo.dev/download/nix/v${APOLLO_ROUTER_VERSION}" | sh
 
 # Add a default copy of the router config file
-ADD config/default_router.yaml /dist/config.yaml
+RUN mkdir -p /config
+ADD config/router_config.yaml /config/router_config.yaml
 
 # Install our router service definition
 ADD s6_service_definitions/router /etc/s6-overlay/s6-rc.d/router
@@ -55,16 +62,19 @@ ADD s6_service_definitions/router /etc/s6-overlay/s6-rc.d/router
 RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/router
 
 # Install our mcp server
-RUN curl -sSL "https://mcp.apollo.dev/download/nix/v${MCP_SERVER_VERSION}" | sh
+RUN curl -sSL "https://mcp.apollo.dev/download/nix/v${APOLLO_MCP_SERVER_VERSION}" | sh
 
 # Install our mcp service definition
 ADD s6_service_definitions/mcp /etc/s6-overlay/s6-rc.d/mcp
 
 # Create a folder for operations
-RUN mkdir -p /dist/operations
+RUN mkdir -p /config/operations
 
 # Let s6 know about our mcp service
 RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/mcp
+
+# Add a Health Check To Ensure The Router Is Running Properly
+HEALTHCHECK --timeout=3s CMD curl -sf http://localhost:8088/health || exit 1
 
 # Use the s6 init process to control our services
 ENTRYPOINT ["/init"]

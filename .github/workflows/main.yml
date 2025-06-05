@@ -1,0 +1,165 @@
+name: Build All In One Container
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+env:
+  REGISTRY: ghcr.io
+  NAMESPACED_REGISTRY: ghcr.io/apollographql/runtime-all-in-one
+  PLATFORMS: linux/arm64,linux/amd64
+
+jobs:
+  build-and-push-image:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+      - name: Add Tool To Parse Dockerfiles
+        uses: taiki-e/install-action@parse-dockerfile
+      - name: Get Versions From Dockerfile
+        id: get-versions
+        run: |
+          VERSIONS=$(parse-dockerfile Dockerfile | jq -cr '[.instructions[] | select(.kind=="LABEL" or .kind=="ARG") | select(.arguments.value | contains("org.opencontainers.image") or startswith("APOLLO_")).arguments.value | match("([^=]*)=(.*)") | .captures | {(.[0].string) : .[1].string}] | add')
+          echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
+      - name: Check Image to Build Post-Merge Does Not Already Exist
+        id: check-image
+        run: |
+          TAG=${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'] }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+          if docker manifest inspect ${{ env.NAMESPACED_REGISTRY }}:$TAG > /dev/null; then
+            echo "The tag "${{ env.NAMESPACED_REGISTRY }}:$TAG" already exists in the repository. Do you need to bump the version in the Dockerfile?"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - name: Calculate Correct Version
+        id: calculate-version
+        run: |
+          CORRECT_VERSION=${{ github.event_name == 'pull_request' && format('{0}-PR{1}', fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'], github.event.number) || fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'] }}
+          echo "correct_version=$CORRECT_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Remove Quotes From Title & Description
+        env:
+          DESCRIPTION: ${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.description'] }}
+          TITLE: ${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.title'] }}
+        id: remove-quotes
+        run: |
+          STRIPPED_DESCRIPTION=${DESCRIPTION//\"/}
+          echo "description=$STRIPPED_DESCRIPTION" >> "$GITHUB_OUTPUT"
+          STRIPPED_TITLE=${TITLE//\"/}
+          echo "title=$STRIPPED_TITLE" >> "$GITHUB_OUTPUT"
+      - name: Get Docker Metadata
+        id: meta
+        uses: docker/metadata-action@418e4b98bf2841bd337d0b24fe63cb36dc8afa55
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: true
+        with:
+          images: ${{ env.NAMESPACED_REGISTRY }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ steps.calculate-version.outputs.correct_version }}
+            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}
+            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }},enable={{is_default_branch}}
+            type=raw,value=latest_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }},enable={{is_default_branch}}
+            type=raw,value=latest_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }},enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.version=${{ steps.calculate-version.outputs.correct_version }}
+            org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
+            org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
+          annotations: |
+            org.opencontainers.image.version=${{ steps.calculate-version.outputs.correct_version }}
+            org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
+            org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
+      - name: Log in to the Container Registry
+        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker
+        uses: docker/setup-docker-action@efe6ba76e30de04f1a84d4aa6ea0d802d73b31b9
+        with:
+          daemon-config: |
+            {
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e600775e527acba2317260cadb64b7e19efd5362
+      - name: Build and Load Docker Image For Testing
+        id: build-for-testing
+        uses: docker/build-push-action@0788c444d8b4d67580213712e34a148cae3a6c4e
+        with:
+          load: true
+          tags: ${{ env.NAMESPACED_REGISTRY }}:test
+          platforms: ${{ env.PLATFORMS }}
+      - name: Install Wiz CLI
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install gpg
+          curl -Lo wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64
+          curl -Lo wizcli-sha256 https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64-sha256
+          curl -Lo wizcli-sha256.sig https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64-sha256.sig
+          curl -Lo wiz_public_key.asc https://downloads.wiz.io/wizcli/public_key.asc
+          gpg --import wiz_public_key.asc
+          gpg --verify wizcli-sha256.sig wizcli-sha256
+          echo "$(cat wizcli-sha256) wizcli" | sha256sum --check
+          chmod +x wizcli
+      - name: Authenticate Wiz CLI
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          ./wizcli auth --id ${{ secrets.WIZ_CLIENT_ID }} --secret ${{ secrets.WIZ_CLIENT_SECRET }}
+      - name: Scan Image
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          ./wizcli docker scan \
+            --image ${{ env.NAMESPACED_REGISTRY }}:test \
+            --dockerfile ${{ github.workspace }}/Dockerfile \
+            --policy "Apollo-Default-Vulnerabilities-Policy" \
+            --sbom-format spdx-json \
+            --sbom-output-file sbom.json \
+            --timeout "0h9m0s" \
+            --sensitive-data
+      - name: Build and Push Docker image
+        id: push
+        uses: docker/build-push-action@0788c444d8b4d67580213712e34a148cae3a6c4e
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ env.PLATFORMS }}
+      - name: Create Git Tag
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: false
+          default_prerelease_bump: false
+          custom_tag: ${{ steps.check-image.outputs.tag }}
+          dry_run: ${{ github.event_name == 'pull_request' }}
+          tag_prefix: ""
+      - name: Create GitHub Release
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: comnoco/create-release-action@6ac85b5a67d93e181c1a8f97072e2e3ffc582ec4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.check-image.outputs.tag }}
+          release_name: All In One Apollo Runtime Container - v${{ steps.calculate-version.outputs.correct_version }} (Router - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}, MCP Server - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }})
+          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.check-image.outputs.tag }}.
+
