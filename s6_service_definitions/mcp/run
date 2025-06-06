@@ -3,15 +3,29 @@
 # Set our working directory
 cd /opt || exit
 
-if [ -z "$ENABLE_MCP_SERVER" ]; then
-  ARGS=(--endpoint http://127.0.0.1:4000 --sse-address 0.0.0.0 --sse-port 5001 --operations /config/operations --introspection)
+if [ -v "$MCP_ENABLE" ]; then
+  ARGS=(--operations /config/operations)
 
-  if [[ -z "$APOLLO_GRAPH_REF" || -z "$APOLLO_KEY" ]]; then
+  if [[ -v MCP_INTROSPECTION ]]; then
+   ARGS+=(--introspection)
+  fi
+
+  if [[ -f /config/api_schema.graphql ]]; then
     ARGS+=(--schema /config/api_schema.graphql)
-  else
+  fi
+
+  if [[ -v "$MCP_UPLINK" ]]; then
     ARGS+=(--uplink)
   fi
 
+  if [[ -v MCP_SSE ]]; then
+    ARGS+=(--sse-address 0.0.0.0)
+  else
+    ARGS+=(--http-address 0.0.0.0)
+  fi
+
   exec /opt/apollo-mcp-server "${ARGS[@]}"
+else
+  while true; do sleep 10000; done
 fi
 

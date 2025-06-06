@@ -40,15 +40,15 @@ The MCP Server included in this container is currently experimental and as such 
 environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
 
 If you wish to enable it for testing purposes then set the environment variable `ENABLE_MCP_SERVER` when running the 
-container, and map container port 5001 to a local port for the MCP server to listen on. This can be achieved by passing 
-the following flags to `docker run`.
+container.
 
 ```shell
 ...
---env ENABLE_MCP_SERVER=1
--p 5001:5001
+--env MCP_ENABLE=1
 ...
 ```
+
+See []() for information on configuring the MCP Server
 
 ## Configuring Using Local Files
 
@@ -114,7 +114,7 @@ additional flag to the command thus:
 To override the default router config provided you can change the values in the `router_config.yaml` file in
 the `my_config` directory.
 
-### Dev Mode
+#### Dev Mode
 
 > ⚠️ This setting should not be used in a production context
 
@@ -129,3 +129,17 @@ This can be done by adding a new flag to the command above as follows:
 --env DEV_MODE=1
 ...
 ```
+
+## Configuring Using Environment Variables
+
+There are several environment variables you can pass to Router and MCP Server to further configure their behaviour,
+these are as follows:
+
+| Environment Variable | Notes                                                                                                      |
+|----------------------|------------------------------------------------------------------------------------------------------------|
+| `APOLLO_KEY`         | A valid API Key for Apollo Studio                                                                          |
+| `APOLLO_GRAPH_REF`   | The Graph Ref in Apollo Studio referenced by the Router and MCP Server                                     |
+| `MCP_ENABLE`         | Enable the MCP Server                                                                                      |
+| `MCP_INTROSPECTION`  | Enable the `--introspection` option for the MCP Server                                                     |
+| `MCP_SSE`            | Use SSE as the transport protocol rather than streamable HTTP                                              |
+| `MCP_UPLINK`         | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF` |
