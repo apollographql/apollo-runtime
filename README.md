@@ -48,7 +48,7 @@ container.
 ...
 ```
 
-See []() for information on configuring the MCP Server
+See [below](#configuring-using-environment-variables) for information on configuring the MCP Server
 
 ## Configuring Using Local Files
 
@@ -96,6 +96,14 @@ file to the `my_config` directory, ensuring it is named `schema.graphql` to use 
 To provide an API schema to the MCP Server you can add a file called `api_schema.graphql` to the `my_config`
 directory.
 
+### Persisted Queries Manifests
+To provide a Persisted Queries Manifest to the MCP Server you can add a file called `persisted_queries_manifest.json` to
+the `my_config` directory.
+
+### Custom Scalars Config
+To provide a Custom Scalars Config to the MCP Server you can add a file called `custom_scalars.graphql` to the 
+`my_config` directory.
+
 ### Operations
 To provide the MCP Server with a set of operations in a file you either:
 
@@ -114,7 +122,7 @@ additional flag to the command thus:
 To override the default router config provided you can change the values in the `router_config.yaml` file in
 the `my_config` directory.
 
-#### Dev Mode
+### Dev Mode
 
 > ⚠️ This setting should not be used in a production context
 
@@ -135,11 +143,16 @@ This can be done by adding a new flag to the command above as follows:
 There are several environment variables you can pass to Router and MCP Server to further configure their behaviour,
 these are as follows:
 
-| Environment Variable | Notes                                                                                                      |
-|----------------------|------------------------------------------------------------------------------------------------------------|
-| `APOLLO_KEY`         | A valid API Key for Apollo Studio                                                                          |
-| `APOLLO_GRAPH_REF`   | The Graph Ref in Apollo Studio referenced by the Router and MCP Server                                     |
-| `MCP_ENABLE`         | Enable the MCP Server                                                                                      |
-| `MCP_INTROSPECTION`  | Enable the `--introspection` option for the MCP Server                                                     |
-| `MCP_SSE`            | Use SSE as the transport protocol rather than streamable HTTP                                              |
-| `MCP_UPLINK`         | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF` |
+| Environment Variable             | Notes                                                                                                                                                                  |
+|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `APOLLO_KEY`                     | A valid API Key for Apollo Studio                                                                                                                                      |
+| `APOLLO_GRAPH_REF`               | The Graph Ref in Apollo Studio referenced by the Router and MCP Server                                                                                                 |
+| `MCP_ALLOW_MUTATIONS`            | Possible values: `none`, don't allow any mutations, `explicit` allow explicit mutations, but don't allow the LLM to build them, `all` Allow the LLM to build mutations |
+| `MCP_DISABLE_TYPE_DESCRIPTION`   | Disable operation root field types in tool description                                                                                                                 |
+| `MCP_DISABLE_SCHEMA_DESCRIPTION` | Disable schema type definitions referenced by all fields returned by the operation in the tool description                                                             |
+| `MCP_ENABLE`                     | Enable the MCP Server                                                                                                                                                  |
+| `MCP_EXPLORER`                   | Expose a tool that returns the URL to open a GraphQL operation in Apollo Explorer (requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`)                                       |
+| `MCP_HEADERS`                    | A list of comma separated, key value pairs (separated by `:`s), of headers to send to the GraphQL endpoint                                                             | 
+| `MCP_LOG_LEVEL`                  | Change the level at which the MCP Server logs, possible values: `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`                                                              |
+| `MCP_INTROSPECTION`              | Enable the `--introspection` option for the MCP Server                                                                                                                 || `MCP_SSE`                        | Use SSE as the transport protocol rather than streamable HTTP                                                                                                          |
+| `MCP_UPLINK`                     | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`                                                             |
