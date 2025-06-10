@@ -6,8 +6,8 @@
     {
       customType: 'regex',
       managerFilePatterns: [
-        '//(^|/|\\.)([Dd]ocker|[Cc]ontainer)file$//',
-        '//(^|/)([Dd]ocker|[Cc]ontainer)file[^/]*$//',
+        '/(^|/)Dockerfile$/',
+        '/(^|/)Dockerfile\\.[^/]*$/',
       ],
       matchStrings: [
         '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))?(?: extractVersion=(?<extractVersion>.*))?(?:^|\\r\\n|\\r|\\n|$)(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)(?:^|\\r\\n|\\r|\\n|$)',
