@@ -39,7 +39,7 @@ We open two ports in the above command:
 The MCP Server included in this container is currently experimental and as such **should not be used in a production 
 environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
 
-If you wish to enable it for testing purposes then set the environment variable `ENABLE_MCP_SERVER` when running the 
+If you wish to enable it for testing purposes then set the environment variable `MCP_ENABLE` when running the 
 container.
 
 ```shell
@@ -151,8 +151,9 @@ these are as follows:
 | `MCP_DISABLE_TYPE_DESCRIPTION`   | Disable operation root field types in tool description                                                                                                                 |
 | `MCP_DISABLE_SCHEMA_DESCRIPTION` | Disable schema type definitions referenced by all fields returned by the operation in the tool description                                                             |
 | `MCP_ENABLE`                     | Enable the MCP Server                                                                                                                                                  |
-| `MCP_EXPLORER`                   | Expose a tool that returns the URL to open a GraphQL operation in Apollo Explorer (requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`)                                       |
+| `MCP_EXPLORER`                   | Expose a tool that returns the URL to open a GraphQL operation in Apollo Explorer (requires `APOLLO_GRAPH_REF`)                                                        |
 | `MCP_HEADERS`                    | A list of comma separated, key value pairs (separated by `:`s), of headers to send to the GraphQL endpoint                                                             | 
+| `MCP_INTROSPECTION`              | Enable the `--introspection` option for the MCP Server                                                                                                                 |
 | `MCP_LOG_LEVEL`                  | Change the level at which the MCP Server logs, possible values: `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`                                                              |
-| `MCP_INTROSPECTION`              | Enable the `--introspection` option for the MCP Server                                                                                                                 || `MCP_SSE`                        | Use SSE as the transport protocol rather than streamable HTTP                                                                                                          |
+| `MCP_SSE`                        | Use SSE as the transport protocol rather than streamable HTTP                                                                                                          |
 | `MCP_UPLINK`                     | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`                                                             |
