@@ -3,13 +3,68 @@
 # Set our working directory
 cd /opt || exit
 
-ARGS=(--endpoint http://127.0.0.1:4000 --sse-address 0.0.0.0 --sse-port 5001 --operations /config/operations --introspection)
+if [ -v "$MCP_ENABLE" ]; then
 
-if [[ -z "$APOLLO_GRAPH_REF" || -z "$APOLLO_KEY" ]]; then
-  ARGS+=(--schema /config/api_schema.graphql)
+  if [[ -f /config/api_schema.graphql ]]; then
+    ARGS+=(--schema /config/api_schema.graphql)
+  fi
+
+  if [[ -f /config/custom_scalars.graphql ]]; then
+    ARGS+=(--custom-scalars-config /config/custom_scalars.graphql)
+  fi
+
+  if [[ -v MCP_HEADERS ]]; then
+    IFS=',' read -ra HEADERS <<< "$MCP_HEADERS"
+    for header in "${HEADERS[@]}"; do
+      ARGS+=(--header "$header")
+    done
+  fi
+
+  if [[ -v MCP_SSE ]]; then
+      ARGS+=(--sse-address 0.0.0.0)
+    else
+      ARGS+=(--http-address 0.0.0.0)
+  fi
+
+  if [[ -v MCP_INTROSPECTION ]]; then
+   ARGS+=(--introspection)
+  fi
+
+  if [[ -v MCP_UPLINK ]]; then
+    ARGS+=(--uplink)
+  fi
+
+  # Only pass through operations if the folder contains files
+  if [ "$(ls -A /config/operations)" ]; then
+   ARGS+=(--operations /config/operations)
+  fi
+
+  if [[ -v MCP_EXPLORER ]]; then
+    ARGS+=(--explorer)
+  fi
+
+  if [[ -f /config/persisted_queries_manifest.json ]]; then
+    ARGS+=(--manifest /config/persisted_queries_manifest.json)
+  fi
+
+  if [[ -v MCP_DISABLE_TYPE_DESCRIPTION ]]; then
+      ARGS+=(--disable-type-description)
+  fi
+
+  if [[ -v MCP_DISABLE_SCHEMA_DESCRIPTION ]]; then
+        ARGS+=(--disable-schema-description)
+  fi
+
+  if [[ -v "$MCP_ALLOW_MUTATIONS" ]]; then
+    ARGS+=(--allow-mutations "$MCP_ALLOW_MUTATIONS")
+  fi
+
+  if [[ -v "$MCP_LOG_LEVEL" ]]; then
+    ARGS+=(--log "$MCP_LOG_LEVEL")
+  fi
+
+  exec /opt/apollo-mcp-server "${ARGS[@]}"
 else
-  ARGS+=(--uplink)
+  while true; do sleep 10000; done
 fi
-
-exec /opt/apollo-mcp-server "${ARGS[@]}"
 
