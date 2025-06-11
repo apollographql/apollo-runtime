@@ -22,17 +22,19 @@ For example:
 The container can be run in multiple configurations depending on your specific needs, and several environment variables
 and file paths can be overridden to give different behaviour.
 
-To get started though, you can use a command like the following, substituting the `APOLLO_GRAPH_REF` and `APOLLO_API_KEY` for the correct values: 
+To get started though, you can use a command like the following, substituting the `APOLLO_GRAPH_REF` and `APOLLO_KEY` for the correct values: 
 ```shell
 docker run \
 --env APOLLO_GRAPH_REF="your graph here" \
 --env APOLLO_KEY="your key here" \
 --rm \
 -p 4000:4000 \
+-p 5000:5000 \
 ghcr.io/apollographql/graphos-runtime:latest
 ```
 We open two ports in the above command:
 - 4000 is where the router is listening. Make your GraphQL queries here.
+- 5000 is where the MCP server is mounted, specifically at the `/mcp` path. Connect your assistants to this port.
 
 ### Running the MCP Server
 
@@ -83,7 +85,7 @@ Providing a Supergraph Schema to the container can be done in two ways.
 
 ##### GraphOS Based
 You can provide a schema directly from GraphOS by setting two environment variables 
-* `APOLLO_API_KEY` - This should be set to the value of a Graph API Key, generated in GraphOS Studio
+* `APOLLO_KEY` - This should be set to the value of a Graph API Key, generated in GraphOS Studio
 * `APOLLO_GRAPH_REF` - This should be set to the value of the GraphRef from GraphOS Studio
 
 This is already demonstrated in the example above
