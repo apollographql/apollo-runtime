@@ -144,15 +144,6 @@ jobs:
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
-      - name: Create Git Tag
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: false
-          default_prerelease_bump: false
-          custom_tag: ${{ steps.check-image.outputs.tag }}
-          dry_run: ${{ github.event_name == 'pull_request' }}
-          tag_prefix: ""
       - name: Create GitHub Release
         if: ${{ github.event_name != 'pull_request' }}
         uses: comnoco/create-release-action@6ac85b5a67d93e181c1a8f97072e2e3ffc582ec4
