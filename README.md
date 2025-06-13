@@ -27,6 +27,7 @@ To get started though, you can use a command like the following, substituting th
 docker run \
 --env APOLLO_GRAPH_REF="your graph here" \
 --env APOLLO_KEY="your key here" \
+--env MCP_ENABLE=1 \
 --rm \
 -p 4000:4000 \
 -p 5000:5000 \
