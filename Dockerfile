@@ -10,7 +10,7 @@ ARG APOLLO_MCP_SERVER_VERSION=0.3.0
 
 LABEL org.opencontainers.image.version=0.0.3
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
-LABEL org.opencontainers.image.title="Apollo Runtime"
+LABEL org.opencontainers.image.title="Apollo GraphOS Runtime"
 LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
 LABEL com.apollographql.router.version=$APOLLO_ROUTER_VERSION
 LABEL com.apollographql.mcp-server.version=$APOLLO_MCP_SERVER_VERSION
