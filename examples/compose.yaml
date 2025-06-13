@@ -15,6 +15,7 @@ services:
       DEV_MODE: 1
       MCP_INTROSPECTION: 1
       MCP_ENABLE: 1
+      MCP_UPLINK: 1
     depends_on:
       - grafana
   grafana:
