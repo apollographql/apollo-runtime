@@ -1,6 +1,6 @@
-# Apollo Runtime All-In-One
+# Apollo GraphOS Runtime Container
 
-A container that has all the required utilities to run the Apollo Runtime, including our new MCP Server.
+A container that has all the required utilities to run the Apollo GraphOS Runtime, including our new MCP Server.
 
 ## Container Tags
 
@@ -13,9 +13,9 @@ and the MCP Server version, each separated by underscores.
 This leads to different tags that will pin different versions of the runtime components as well as the container itself.
 
 For example:
-* `ghcr.io/apollographql/runtime-all-in-one:latest` - This will give the latest of all components and the runtime container
-* `ghcr.io/apollographql/runtime-all-in-one:v0.1.0_router2.1.2` - This will pin the runtime container version and the router version, but always get the latest `mcp-server` version
-* `ghcr.io/apollographql/runtime-all-in-one:latest_router2.1.2_mcp-server0.2.1` - This will pin Router and MCP Server versions but not the runtime container version
+* `ghcr.io/apollographql/graphos-runtime:latest` - This will give the latest of all components and the runtime container
+* `ghcr.io/apollographql/graphos-runtime:v0.1.0_router2.1.2` - This will pin the runtime container version and the router version, but always get the latest `mcp-server` version
+* `ghcr.io/apollographql/graphos-runtime:latest_router2.1.2_mcp-server0.2.1` - This will pin Router and MCP Server versions but not the runtime container version
 
 ## Running The Container
 
@@ -29,7 +29,7 @@ docker run \
 --env APOLLO_KEY="your key here" \
 --rm \
 -p 4000:4000 \
-ghcr.io/apollographql/runtime-all-in-one:latest
+ghcr.io/apollographql/graphos-runtime:latest
 ```
 We open two ports in the above command:
 - 4000 is where the router is listening. Make your GraphQL queries here.
