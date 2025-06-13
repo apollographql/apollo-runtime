@@ -8,9 +8,9 @@ ARG APOLLO_ROUTER_VERSION=2.3.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG APOLLO_MCP_SERVER_VERSION=0.3.0
 
-LABEL org.opencontainers.image.version=0.0.2
+LABEL org.opencontainers.image.version=0.0.3
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
-LABEL org.opencontainers.image.title="Apollo Runtime"
+LABEL org.opencontainers.image.title="Apollo GraphOS Runtime"
 LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
 LABEL com.apollographql.router.version=$APOLLO_ROUTER_VERSION
 LABEL com.apollographql.mcp-server.version=$APOLLO_MCP_SERVER_VERSION
@@ -18,10 +18,6 @@ LABEL com.apollographql.mcp-server.version=$APOLLO_MCP_SERVER_VERSION
 ARG TARGETARCH
 USER root
 WORKDIR /opt
-
-# Copy our otel bits into our final image
-COPY --from=otel /otelcol-contrib /otelcol-contrib
-COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
 
 # Install dependencies to aid build
 RUN microdnf install -y tar xz wget which gzip
@@ -47,6 +43,16 @@ RUN case $TARGETARCH in \
 
 # Extract the architecture dependent parts
 RUN tar -C / -Jxpf /tmp/s6.tar.xz && rm -r /tmp/s6.tar.xz
+
+# Copy our otel collector into our final image
+COPY --from=otel /otelcol-contrib /otelcol-contrib
+COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
+
+# Install our otelcol service definition
+ADD s6_service_definitions/otelcol /etc/s6-overlay/s6-rc.d/otelcol
+
+# Let s6 know about our otelcol service
+RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/otelcol
 
 # Download the router binary
 RUN curl -sSL "https://router.apollo.dev/download/nix/v${APOLLO_ROUTER_VERSION}" | sh
