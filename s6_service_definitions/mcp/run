@@ -34,6 +34,10 @@ if [ -v "$MCP_ENABLE" ]; then
     ARGS+=(--uplink)
   fi
 
+  if [[ -v $MCP_COLLECTION ]]; then
+    ARGS+=(--collection "$MCP_COLLECTION")
+  fi
+
   # Only pass through operations if the folder contains files
   if [ "$(ls -A /config/operations)" ]; then
    ARGS+=(--operations /config/operations)
