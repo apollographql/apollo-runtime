@@ -3,7 +3,7 @@
 # Set our working directory
 cd /opt || exit
 
-if [ -v "$MCP_ENABLE" ]; then
+if [ -v MCP_ENABLE ]; then
 
   if [[ -f /config/api_schema.graphql ]]; then
     ARGS+=(--schema /config/api_schema.graphql)
@@ -34,7 +34,7 @@ if [ -v "$MCP_ENABLE" ]; then
     ARGS+=(--uplink)
   fi
 
-  if [[ -v $MCP_COLLECTION ]]; then
+  if [[ -v MCP_COLLECTION ]]; then
     ARGS+=(--collection "$MCP_COLLECTION")
   fi
 
@@ -59,11 +59,11 @@ if [ -v "$MCP_ENABLE" ]; then
         ARGS+=(--disable-schema-description)
   fi
 
-  if [[ -v "$MCP_ALLOW_MUTATIONS" ]]; then
+  if [[ -v MCP_ALLOW_MUTATIONS ]]; then
     ARGS+=(--allow-mutations "$MCP_ALLOW_MUTATIONS")
   fi
 
-  if [[ -v "$MCP_LOG_LEVEL" ]]; then
+  if [[ -v MCP_LOG_LEVEL ]]; then
     ARGS+=(--log "$MCP_LOG_LEVEL")
   fi
 
