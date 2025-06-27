@@ -32,7 +32,15 @@ jobs:
         run: |
           VERSIONS=$(parse-dockerfile Dockerfile | jq -cr '[.instructions[] | select(.kind=="LABEL" or .kind=="ARG") | select(.arguments.value | contains("org.opencontainers.image") or startswith("APOLLO_")).arguments.value | match("([^=]*)=(.*)") | .captures | {(.[0].string) : .[1].string}] | add')
           echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
-      - name: Check Image to Build Post-Merge Does Not Already Exist
+          
+          # Check if preview version is defined as workflow input
+          if [ -n "${{ inputs.preview_router_version }}" ]; then
+            echo "has_preview=true" >> "$GITHUB_OUTPUT"
+            echo "preview_version=${{ inputs.preview_router_version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_preview=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check Image Does Not Already Exist
         id: check-image
         run: |
           TAG=${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'] }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
@@ -141,9 +149,18 @@ jobs:
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+      - name: Build and Push Preview Docker Image
+        if: steps.get-versions.outputs.has_preview == 'true'
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          push: true
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            APOLLO_ROUTER_VERSION=${{ steps.get-versions.outputs.preview_version }}
+          tags: |
+            ${{ env.NAMESPACED_REGISTRY }}:${{ github.event_name == 'pull_request' && format('PR{0}-router-preview', github.event.number) || 'router-preview' }}
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: ${{ env.PLATFORMS }}
       - name: Create GitHub Release
         if: ${{ github.event_name != 'pull_request' }}
         uses: comnoco/create-release-action@6ac85b5a67d93e181c1a8f97072e2e3ffc582ec4
