@@ -28,6 +28,7 @@ docker run \
 --env APOLLO_GRAPH_REF="your graph here" \
 --env APOLLO_KEY="your key here" \
 --env MCP_ENABLE=1 \
+--env MCP_UPLINK=1 \
 --rm \
 -p 4000:4000 \
 -p 5050:5000 \
@@ -42,12 +43,13 @@ We open two ports in the above command:
 The MCP Server included in this container is currently experimental and as such **should not be used in a production 
 environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
 
-If you wish to enable it for testing purposes then set the environment variable `MCP_ENABLE` when running the 
+If you wish to enable it for testing purposes then set the environment variables `MCP_ENABLE` and `MCP_UPLINK` when running the 
 container.
 
 ```shell
 ...
---env MCP_ENABLE=1
+--env MCP_ENABLE=1 \
+--env MCP_UPLINK=1 \
 ...
 ```
 
@@ -151,6 +153,7 @@ these are as follows:
 | `APOLLO_KEY`                     | A valid API Key for Apollo Studio                                                                                                                                      |
 | `APOLLO_GRAPH_REF`               | The Graph Ref in Apollo Studio referenced by the Router and MCP Server                                                                                                 |
 | `MCP_ALLOW_MUTATIONS`            | Possible values: `none`, don't allow any mutations, `explicit` allow explicit mutations, but don't allow the LLM to build them, `all` Allow the LLM to build mutations |
+| `MCP_COLLECTION`                 | The ID of an operation collection to use as the source for operations                                                                                                  |
 | `MCP_DISABLE_TYPE_DESCRIPTION`   | Disable operation root field types in tool description                                                                                                                 |
 | `MCP_DISABLE_SCHEMA_DESCRIPTION` | Disable schema type definitions referenced by all fields returned by the operation in the tool description                                                             |
 | `MCP_ENABLE`                     | Enable the MCP Server                                                                                                                                                  |
@@ -159,4 +162,4 @@ these are as follows:
 | `MCP_INTROSPECTION`              | Enable the `--introspection` option for the MCP Server                                                                                                                 |
 | `MCP_LOG_LEVEL`                  | Change the level at which the MCP Server logs, possible values: `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`                                                              |
 | `MCP_SSE`                        | Use SSE as the transport protocol rather than streamable HTTP                                                                                                          |
-| `MCP_UPLINK`                     | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`                                                             |
+| `MCP_UPLINK`                     | Enable use of Uplink to get the schema and persisted queries (Requires `APOLLO_KEY` and `APOLLO_GRAPH_REF`)                                                            |
