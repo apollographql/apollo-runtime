@@ -5,6 +5,9 @@ FROM almalinux:10-minimal@sha256:9cdcbb8b9b0e522e4c190d4f1db67ebd443736630ad77cf
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
 ARG APOLLO_ROUTER_VERSION=2.3.0
+# Preview router version - set this to build preview images automatically
+# once new preview is out, we'll uncomment this.
+#ARG APOLLO_ROUTER_PREVIEW_VERSION=2.3.0-preview.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG APOLLO_MCP_SERVER_VERSION=0.3.0
 
