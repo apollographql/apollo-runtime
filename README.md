@@ -74,6 +74,20 @@ The configuration options below will make it clear when files need to be added t
 > ...
 > ```
 
+### In Dockerfile
+If you're working with a `Dockerfile` instead of a CLI, you can also add the following to use local files:
+```dockerfile
+FROM ghcr.io/apollographql/apollo-runtime:latest
+
+EXPOSE 4000
+
+COPY data/router.yaml /config/router_config.yaml
+COPY data/schema.graphql /config/schema.graphql
+
+ENV APOLLO_ROUTER_CONFIG_PATH=/config/router_config.yaml
+ENV APOLLO_ROUTER_SUPERGRAPH_PATH=/config/schema.graphql
+```
+
 ### Schemas
 
 Two kinds of schema can be provided to the container for use by the Router and the MCP Server. These are the 
