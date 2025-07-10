@@ -30,8 +30,8 @@ if [ -v MCP_ENABLE ]; then
    ARGS+=(--introspection)
   fi
 
-  if [[ -v MCP_UPLINK ]]; then
-    ARGS+=(--uplink)
+  if [[ -v MCP_UPLINK_MANIFEST ]]; then
+    ARGS+=(--uplink-manifest)
   fi
 
   if [[ -v MCP_COLLECTION ]]; then
