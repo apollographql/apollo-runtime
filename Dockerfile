@@ -1,5 +1,5 @@
 FROM otel/opentelemetry-collector-contrib@sha256:e94cfd92357aa21f4101dda3c0c01f90e6f24115ba91b263c4d09fed7911ae68 AS otel
-FROM almalinux:10-minimal@sha256:9cdcbb8b9b0e522e4c190d4f1db67ebd443736630ad77cf2263ba86d0870bf1b AS final
+FROM almalinux:10-minimal@sha256:56d2971a2597628fe3e933fb400eb85f832f7d27459b016a138bc739b8aba185 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
