@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../../mcp-apollo/schema.json
+
+################################################################################
+# Example MCP configuration
+#
+# Note that some of these options are overwritten by the run script depending on
+# the presence of certain files. Refer to the README for more information.
+################################################################################
+
+# Use uplink for operations
+operations:
+  source: uplink
+
+# Use uplink for schema information
+schema:
+  source: uplink
+
+# Configure the MCP server to listen for streamable HTTP messages on port 5000
+# for all addresses
+transport:
+  type: streamable_http
+  address: "0.0.0.0"
+  port: 5000

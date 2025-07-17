@@ -3,72 +3,55 @@
 # Set our working directory
 cd /opt || exit
 
+LOCAL_CUSTOM_SCALARS="/config/custom_scalars.graphql"
+LOCAL_OPERATIONS="/config/operations"
+LOCAL_SCHEMA="/config/api_schema.graphql"
+LOCAL_PQ_MANIFEST="/config/persisted_queries_manifest.json"
+
+# Options set below are overrides using environment variables that match the
+# format expected by the MCP server, which is as follows:
+#
+# - The prefix `APOLLO_MCP_`
+# - The keys of the setting, separated by `__` for nesting
+#
+# e.g. The key `introspection.execute.enabled` would correspond to the env var
+# `APOLLO_MCP_INTROSPECTION__EXECUTE__ENABLED`.
+
 if [ -v MCP_ENABLE ]; then
+	# If the user has provided an API schema, then overwrite the default config
+	# option of using uplink to use the file instead
+	if [[ -f "$LOCAL_SCHEMA" ]]; then
+		echo "Using local API schema found at $LOCAL_SCHEMA instead of uplink. Delete this file to use uplink instead"
 
-  if [[ -f /config/api_schema.graphql ]]; then
-    ARGS+=(--schema /config/api_schema.graphql)
-  fi
+		export APOLLO_MCP_SCHEMA__SOURCE="local"
+		export APOLLO_MCP_SCHEMA__PATH="$LOCAL_SCHEMA"
+	fi
 
-  if [[ -f /config/custom_scalars.graphql ]]; then
-    ARGS+=(--custom-scalars-config /config/custom_scalars.graphql)
-  fi
+	# If the user has provided a custom scalar map, then overwrite the default config
+	# option of using uplink to use the supplied file instead
+	if [[ -f "$LOCAL_CUSTOM_SCALARS" ]]; then
+		echo "Using custom scalar map found at $LOCAL_CUSTOM_SCALARS. Delete this file to disable"
 
-  if [[ -v MCP_HEADERS ]]; then
-    IFS=',' read -ra HEADERS <<< "$MCP_HEADERS"
-    for header in "${HEADERS[@]}"; do
-      ARGS+=(--header "$header")
-    done
-  fi
+		export APOLLO_MCP_CUSTOM_SCALARS="$LOCAL_CUSTOM_SCALARS"
+	fi
 
-  if [[ -v MCP_SSE ]]; then
-      ARGS+=(--sse-address 0.0.0.0)
-    else
-      ARGS+=(--http-address 0.0.0.0)
-  fi
+	# For the operation source, the user can either place operations in the
+	# right folder, or place a PQ manifest. If both are supplied, then the PQ manifest
+	# takes precedence.
+	if [[ -f "$LOCAL_PQ_MANIFEST" ]]; then
+		echo "Using persisted query manifest found at $LOCAL_PQ_MANIFEST."
+		echo "  NOTE: If you wish to use local operations in $LOCAL_OPERATIONS instead, make sure to remove the manifest first"
 
-  if [[ -v MCP_INTROSPECTION ]]; then
-   ARGS+=(--introspection)
-  fi
+		export APOLLO_MCP_OPERATIONS__SOURCE="manifest"
+		export APOLLO_MCP_OPERATIONS__PATH="$LOCAL_PQ_MANIFEST"
+	elif [ "$(ls -A $LOCAL_OPERATIONS)" ]; then
+		echo "Using operations contained in $LOCAL_OPERATIONS"
 
-  if [[ -v MCP_UPLINK_MANIFEST ]]; then
-    ARGS+=(--uplink-manifest)
-  fi
+		export APOLLO_MCP_OPERATIONS__SOURCE="local"
+		export APOLLO_MCP_OPERATIONS__PATHS="[$LOCAL_OPERATIONS]"
+	fi
 
-  if [[ -v MCP_COLLECTION ]]; then
-    ARGS+=(--collection "$MCP_COLLECTION")
-  fi
-
-  # Only pass through operations if the folder contains files
-  if [ "$(ls -A /config/operations)" ]; then
-   ARGS+=(--operations /config/operations)
-  fi
-
-  if [[ -v MCP_EXPLORER ]]; then
-    ARGS+=(--explorer)
-  fi
-
-  if [[ -f /config/persisted_queries_manifest.json ]]; then
-    ARGS+=(--manifest /config/persisted_queries_manifest.json)
-  fi
-
-  if [[ -v MCP_DISABLE_TYPE_DESCRIPTION ]]; then
-      ARGS+=(--disable-type-description)
-  fi
-
-  if [[ -v MCP_DISABLE_SCHEMA_DESCRIPTION ]]; then
-        ARGS+=(--disable-schema-description)
-  fi
-
-  if [[ -v MCP_ALLOW_MUTATIONS ]]; then
-    ARGS+=(--allow-mutations "$MCP_ALLOW_MUTATIONS")
-  fi
-
-  if [[ -v MCP_LOG_LEVEL ]]; then
-    ARGS+=(--log "$MCP_LOG_LEVEL")
-  fi
-
-  exec /opt/apollo-mcp-server "${ARGS[@]}"
+	exec /opt/apollo-mcp-server "/config/mcp_config.yaml"
 else
-  while true; do sleep 10000; done
+	while true; do sleep 10000; done
 fi
-
