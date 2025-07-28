@@ -3,15 +3,47 @@
 ################################################################################
 # Example MCP configuration
 #
-# Note that some of these options are overwritten by the run script depending on
-# the presence of certain files. Refer to the README for more information.
+# Note: Refer to the official documentation for info on what should be present
+# https://www.apollographql.com/docs/apollo-mcp-server/command-reference
 ################################################################################
 
+# If you have custom scalars that you wish to use in your operations / schema, use the following
+# configuration
+#
+# ```yaml
+# custom_scalars: /config/custom_scalars.graphql
+# ```
+
 # Use uplink for operations
+#
+# Note: If you wish to use files inside the container instead, use the following configuration:
+#
+# ```yaml
+# operations:
+#   source: local
+#   paths:
+#   - /config/operations
+# ```
+#
+# Note: If you wish to use a persisted query manifest instead, use the following configuration:
+#
+# ```yaml
+# operations:
+#   source: manifest
+#   path: /config/persisted_queries_manifest.json
+# ```
 operations:
   source: uplink
 
 # Use uplink for schema information
+#
+# Note: If you wish to use a file inside the container instead, use the following configuration:
+#
+# ```yaml
+# schema:
+#   source: local
+#   path: /config/api_schema.graphql
+# ```
 schema:
   source: uplink
 

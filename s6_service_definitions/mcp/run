@@ -3,11 +3,6 @@
 # Set our working directory
 cd /opt || exit
 
-LOCAL_CUSTOM_SCALARS="/config/custom_scalars.graphql"
-LOCAL_OPERATIONS="/config/operations"
-LOCAL_SCHEMA="/config/api_schema.graphql"
-LOCAL_PQ_MANIFEST="/config/persisted_queries_manifest.json"
-
 # Options set below are overrides using environment variables that match the
 # format expected by the MCP server, which is as follows:
 #
@@ -18,39 +13,6 @@ LOCAL_PQ_MANIFEST="/config/persisted_queries_manifest.json"
 # `APOLLO_MCP_INTROSPECTION__EXECUTE__ENABLED`.
 
 if [ -v MCP_ENABLE ]; then
-	# If the user has provided an API schema, then overwrite the default config
-	# option of using uplink to use the file instead
-	if [[ -f "$LOCAL_SCHEMA" ]]; then
-		echo "Using local API schema found at $LOCAL_SCHEMA instead of uplink. Delete this file to use uplink instead"
-
-		export APOLLO_MCP_SCHEMA__SOURCE="local"
-		export APOLLO_MCP_SCHEMA__PATH="$LOCAL_SCHEMA"
-	fi
-
-	# If the user has provided a custom scalar map, then overwrite the default config
-	# option of using uplink to use the supplied file instead
-	if [[ -f "$LOCAL_CUSTOM_SCALARS" ]]; then
-		echo "Using custom scalar map found at $LOCAL_CUSTOM_SCALARS. Delete this file to disable"
-
-		export APOLLO_MCP_CUSTOM_SCALARS="$LOCAL_CUSTOM_SCALARS"
-	fi
-
-	# For the operation source, the user can either place operations in the
-	# right folder, or place a PQ manifest. If both are supplied, then the PQ manifest
-	# takes precedence.
-	if [[ -f "$LOCAL_PQ_MANIFEST" ]]; then
-		echo "Using persisted query manifest found at $LOCAL_PQ_MANIFEST."
-		echo "  NOTE: If you wish to use local operations in $LOCAL_OPERATIONS instead, make sure to remove the manifest first"
-
-		export APOLLO_MCP_OPERATIONS__SOURCE="manifest"
-		export APOLLO_MCP_OPERATIONS__PATH="$LOCAL_PQ_MANIFEST"
-	elif [ "$(ls -A $LOCAL_OPERATIONS)" ]; then
-		echo "Using operations contained in $LOCAL_OPERATIONS"
-
-		export APOLLO_MCP_OPERATIONS__SOURCE="local"
-		export APOLLO_MCP_OPERATIONS__PATHS="[$LOCAL_OPERATIONS]"
-	fi
-
 	exec /opt/apollo-mcp-server "/config/mcp_config.yaml"
 else
 	while true; do sleep 10000; done
