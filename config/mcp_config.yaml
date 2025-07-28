@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../mcp-apollo/schema.json
+# yaml-language-server: $schema=https://github.com/apollographql/apollo-mcp-server/releases/download/v0.6.0/config.schema.json
 
 ################################################################################
 # Example MCP configuration
