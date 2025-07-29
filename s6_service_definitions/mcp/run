@@ -3,14 +3,8 @@
 # Set our working directory
 cd /opt || exit
 
-# Options set below are overrides using environment variables that match the
-# format expected by the MCP server, which is as follows:
-#
-# - The prefix `APOLLO_MCP_`
-# - The keys of the setting, separated by `__` for nesting
-#
-# e.g. The key `introspection.execute.enabled` would correspond to the env var
-# `APOLLO_MCP_INTROSPECTION__EXECUTE__ENABLED`.
+# See documentation for available options
+# https://www.apollographql.com/docs/apollo-mcp-server/command-reference
 
 if [ -v MCP_ENABLE ]; then
 	exec /opt/apollo-mcp-server "/config/mcp_config.yaml"
