@@ -24,7 +24,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@09d2acae674a48949e3602304ab46fd20ae0c42f
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709
       - name: Add Tool To Parse Dockerfiles
         uses: taiki-e/install-action@parse-dockerfile
       - name: Get Versions From Dockerfile
@@ -58,7 +58,7 @@ jobs:
           echo "title=$STRIPPED_TITLE" >> "$GITHUB_OUTPUT"
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@be19121bfd18b9c1ac415d9571d4f67b9b357886
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
@@ -81,7 +81,7 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
+        uses: docker/login-action@ef38ec311a7df3f01475313e7c5bb584b74b112a
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
