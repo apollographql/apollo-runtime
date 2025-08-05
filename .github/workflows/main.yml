@@ -175,7 +175,7 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: index.docker.io/${{ env.DOCKER_HUB_REGISTRY }}
+          subject-name: index.docker.io/${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
       - name: Create GitHub Release
@@ -186,5 +186,5 @@ jobs:
         with:
           tag_name: ${{ steps.check-image.outputs.tag }}
           release_name: Apollo Runtime Container - v${{ steps.calculate-version.outputs.correct_version }} (Router - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}, MCP Server - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }})
-          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.check-image.outputs.tag }}.
+          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.check-image.outputs.tag }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ steps.check-image.outputs.tag }}.
 
