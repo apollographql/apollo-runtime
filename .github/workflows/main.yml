@@ -11,6 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   NAMESPACED_REGISTRY: ghcr.io/apollographql/apollo-runtime
+  NAMESPACED_DOCKERHUB_REGISTRY: apollograph/apollo-runtime
   PLATFORMS: linux/arm64,linux/amd64
 
 jobs:
@@ -62,7 +63,9 @@ jobs:
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
-          images: ${{ env.NAMESPACED_REGISTRY }}
+          images: |
+            ${{ env.NAMESPACED_REGISTRY }}
+            apollograph/apollo-runtime
           tags: |
             type=semver,pattern={{version}},value=${{ steps.calculate-version.outputs.correct_version }}
             type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}
@@ -135,6 +138,32 @@ jobs:
             --sbom-output-file sbom.json \
             --timeout "0h9m0s" \
             --sensitive-data
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Authenticate With GCP
+        if: ${{ github.event_name != 'pull_request' }}
+        id: auth
+        uses: 'google-github-actions/auth@ba79af03959ebeac9769e648f473a284504d9193'
+        with:
+          token_format: 'access_token'
+          project_id: "platform-mgmt-service-e0izz"
+          service_account: "runtime-container-ci@platform-mgmt-service-e0izz.iam.gserviceaccount.com"
+          workload_identity_provider: "projects/865738624352/locations/global/workloadIdentityPools/github-d8bck/providers/github-d8bck"
+      - name: Fetch DockerHub Credential
+        id: gsm
+        uses: google-github-actions/get-secretmanager-secrets@50ec04d56ddf2740b0bde82926cc742f90e06d2b
+        with:
+          secrets: |-
+            token:platform-prod-service-q8dyj/docker_hub_push_token
+      - name: Docker Auth
+        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
+        with:
+          username: 'apollograph'
+          password: '${{ steps.gsm.outputs.token }}'
       - name: Build and Push Docker image
         id: push
         uses: docker/build-push-action@55146d969b0dff1a5c12630229609757af5b1081
@@ -144,6 +173,13 @@ jobs:
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
+      - name: Generate artifact attestation
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: index.docker.io/${{ env.DOCKER_HUB_REGISTRY }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
       - name: Create GitHub Release
         if: ${{ github.event_name != 'pull_request' }}
         uses: comnoco/create-release-action@6ac85b5a67d93e181c1a8f97072e2e3ffc582ec4
