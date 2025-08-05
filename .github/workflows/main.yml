@@ -145,7 +145,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Authenticate With GCP
-        if: ${{ github.event_name != 'pull_request' }}
         id: auth
         uses: 'google-github-actions/auth@ba79af03959ebeac9769e648f473a284504d9193'
         with:
@@ -174,7 +173,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
       - name: Generate artifact attestation
-        if: ${{ github.event_name != 'pull_request' }}
         uses: actions/attest-build-provenance@v2
         with:
           subject-name: index.docker.io/${{ env.DOCKER_HUB_REGISTRY }}
