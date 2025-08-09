@@ -24,7 +24,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@09d2acae674a48949e3602304ab46fd20ae0c42f
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709
       - name: Add Tool To Parse Dockerfiles
         uses: taiki-e/install-action@parse-dockerfile
       - name: Get Versions From Dockerfile
@@ -58,7 +58,7 @@ jobs:
           echo "title=$STRIPPED_TITLE" >> "$GITHUB_OUTPUT"
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@be19121bfd18b9c1ac415d9571d4f67b9b357886
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
@@ -81,13 +81,13 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@3d100841f68d4548bf57e52eb27bd33ec5069f55
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker
-        uses: docker/setup-docker-action@29412e2cf6d24b62f90425ba31a07e5d683a7127
+        uses: docker/setup-docker-action@46897a62896535bdd1405daaf3939f80200ea25d
         with:
           daemon-config: |
             {
@@ -96,10 +96,10 @@ jobs:
               }
             }
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+        uses: docker/setup-buildx-action@2c8bcdab540207666c188bc0c1fe75d2d109dc81
       - name: Build and Load Docker Image For Testing
         id: build-for-testing
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        uses: docker/build-push-action@55146d969b0dff1a5c12630229609757af5b1081
         with:
           load: true
           tags: ${{ env.NAMESPACED_REGISTRY }}:test
@@ -137,7 +137,7 @@ jobs:
             --sensitive-data
       - name: Build and Push Docker image
         id: push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        uses: docker/build-push-action@55146d969b0dff1a5c12630229609757af5b1081
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
