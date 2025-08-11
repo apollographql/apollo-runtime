@@ -8,7 +8,7 @@ ARG APOLLO_ROUTER_VERSION=2.5.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG APOLLO_MCP_SERVER_VERSION=0.7.0
 
-LABEL org.opencontainers.image.version=0.0.12
+LABEL org.opencontainers.image.version=0.0.13
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
 LABEL org.opencontainers.image.title="Apollo Runtime"
 LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
