@@ -17,7 +17,7 @@ For example:
 * `ghcr.io/apollographql/apollo-runtime:v0.1.0_router2.1.2` - This will pin the runtime container version and the router version, but always get the latest `mcp-server` version
 * `ghcr.io/apollographql/apollo-runtime:latest_router2.1.2_mcp-server0.2.1` - This will pin Router and MCP Server versions but not the runtime container version
 
-> If `ghcr.io` is inaccessible to you, we also publish all images to DockerHub as of `v0.0.9_router2.4.0_mcp-server0.6.1` onwards.
+> If `ghcr.io` is inaccessible to you, we also publish all images to DockerHub as of `0.0.13_router2.5.0_mcp-server0.7.0` onwards.
 > 
 > Simply run `docker pull apollograph/apollo-runtime` to access the images
 
