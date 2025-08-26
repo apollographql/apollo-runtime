@@ -2,7 +2,7 @@
 
 #### Setting up the OTEL Collector
 
-1. Copy the `otel-datadog.yaml` to the path `/config/otel-config.yaml` so that the packaged OTEL collector can find it.
+1. Copy the `otel-config.yaml` to the path `/config/otel-config.yaml` so that the packaged OTEL collector can find it.
 2. Copy the `router_config.yaml` to your `/config/router_config.yaml` directory
 3. Configure the resource attributes in your copied `router_config.yaml`:
    ```yaml
