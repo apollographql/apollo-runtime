@@ -33,6 +33,6 @@ however, you supply a valid OTEL Collector config at the path `/config/otel-conf
 and start collecting Router metrics. These can then be sent to your own APM system by tweaking the config to suit your 
 needs.
 
-An [example config](datadog/otel-collector/otel-datadog.yaml) is provided in the `datadog` directory for interfacing with 
+An [example config](datadog/otel-collector/otel-datadog.yaml) is provided in the `datadog/otel-collector` directory for interfacing with 
 [DataDog](https://docs.datadoghq.com/opentelemetry/setup/collector_exporter/), other APM providers will provide similar
 documentation and the example can be further tweaked to suit these requirements.
