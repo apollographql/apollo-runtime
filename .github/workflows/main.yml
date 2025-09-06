@@ -173,7 +173,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           platforms: ${{ env.PLATFORMS }}
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-name: index.docker.io/${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}
           subject-digest: ${{ steps.push.outputs.digest }}
