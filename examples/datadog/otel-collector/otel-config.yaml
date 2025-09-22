@@ -1,0 +1,106 @@
+# SAMPLE otel collector configuration for forwarding metrics to datadog
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+  # The hostmetrics receiver is required to get correct infrastructure metrics in Datadog.
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      paging:
+        metrics:
+          system.paging.utilization:
+            enabled: true
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+          system.cpu.physical.count:
+            enabled: true
+          system.cpu.logical.count:
+            enabled: true
+          system.cpu.frequency:
+            enabled: true
+      disk:
+      filesystem:
+        metrics:
+          system.filesystem.utilization:
+            enabled: true
+      load:
+      memory:
+      network:
+      processes:
+  # The prometheus receiver scrapes metrics needed for the OpenTelemetry Collector Dashboard.
+  prometheus:
+    config:
+      scrape_configs:
+      - job_name: 'otelcol'
+        scrape_interval: 10s
+        static_configs:
+        - targets: ['localhost:8888']
+
+processors:
+  batch:
+    send_batch_max_size: 1000
+    send_batch_size: 100
+    timeout: 10s
+
+  # See more about sampling concepts here: https://opentelemetry.io/docs/concepts/sampling/
+  # Tail sampling for intelligent sampling decisions. It requires all spans for a given trace to be sent to the same collector.
+  # If this is not the case, you can fall back to the probabilistic_sampler
+  tail_sampling: # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor#readme
+    decision_wait: 30s
+    num_traces: 50000
+    policies:
+      # Always Sample GraphQL errors
+      - name: graphql_errors
+        type: boolean_attribute
+        boolean_attribute:
+          key: graphql.errors
+          value: true
+      # Always sample errors
+      - name: errors
+        type: status_code
+        status_code:
+          status_codes: [ ERROR ]
+      # Always sample slow requests
+      - name: slow_requests
+        type: latency
+        latency:
+          threshold_ms: 1000
+      # Random sampling for everything else
+      - name: random_sampling
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 10
+
+    # # Probabilistic sampling for consistent sampling across incomplete traces. You can use this instead of the tail_sampling.
+    # probabilistic_sampler:
+    #   sampling_percentage: 100 # Keep all traces that make it to collector
+
+connectors:
+  datadog/connector:
+
+exporters:
+  datadog/exporter:
+    api:
+      site: ${env:DD_SITE}
+      key: ${env:DD_API_KEY}
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics, prometheus, otlp, datadog/connector]
+      processors: [batch]
+      exporters: [datadog/exporter]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [datadog/connector]
+    traces/sampling: # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/datadogexporter/examples/collector.yaml#L517
+      receivers: [ datadog/connector ]
+      processors: [ tail_sampling ]
+      exporters: [ datadog/exporter ]
