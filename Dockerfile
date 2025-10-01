@@ -45,7 +45,7 @@ RUN case $TARGETARCH in \
 RUN tar -C / -Jxpf /tmp/s6.tar.xz && rm -r /tmp/s6.tar.xz
 
 # Copy our otel collector into our final image
-COPY --from=otel /otelcol-contrib /otelcol-contrib
+COPY --from=otel /otelcol-contrib /opt/otelcol-contrib
 COPY --from=otel /etc/otelcol-contrib /etc/otelcol-contrib
 
 # Install our otelcol service definition
