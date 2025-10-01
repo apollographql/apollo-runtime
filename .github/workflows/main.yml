@@ -84,7 +84,7 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
+        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -139,7 +139,7 @@ jobs:
             --timeout "0h9m0s" \
             --sensitive-data
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
+        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -159,7 +159,7 @@ jobs:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
       - name: Docker Auth
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1
+        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
         with:
           username: 'apollograph'
           password: '${{ steps.gsm.outputs.token }}'
