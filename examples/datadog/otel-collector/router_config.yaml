@@ -22,7 +22,7 @@ telemetry:
       supergraph: # Apollo specific attribute options: https://www.apollographql.com/docs/graphos/routing/observability/telemetry/instrumentation/standard-attributes#supergraph
         attributes:
           otel.name: supergraph
-          operation.name: "taco"
+          operation.name: "supergraph"
           resource.name:
             operation_name: string
           otel.status_code:  # This attribute will be set to true if the response from the router contained errors in the response body and will mark spans as Error in the APM UI.
