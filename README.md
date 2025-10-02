@@ -43,10 +43,7 @@ We open two ports in the above command:
 
 ### Running the MCP Server
 
-The MCP Server included in this container is currently experimental and as such **should not be used in a production 
-environment**. For more information see [here](https://www.apollographql.com/docs/graphos/resources/feature-launch-stages#experimental)
-
-If you wish to enable it for testing purposes then set the environment variable `MCP_ENABLE` when running the container.
+Set the environment variable `MCP_ENABLE` when running the container.
 
 ```shell
 ...
