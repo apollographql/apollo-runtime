@@ -34,12 +34,12 @@ docker run \
 --env MCP_ENABLE=1 \
 --rm \
 -p 4000:4000 \
--p 5050:5000 \
+-p 8000:8000 \
 ghcr.io/apollographql/apollo-runtime:latest
 ```
 We open two ports in the above command:
 - 4000 is where the router is listening. Make your GraphQL queries here.
-- 5050 is where the MCP server is mounted, specifically at the `/mcp` path. Connect your assistants to this port.
+- 8000 is where the MCP server is mounted, specifically at the `/mcp` path. Connect your assistants to this port.
 
 ### Running the MCP Server
 
