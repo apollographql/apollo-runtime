@@ -84,7 +84,7 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -102,7 +102,7 @@ jobs:
         uses: docker/setup-buildx-action@1583c0f09d26c58c59d25b0eef29792b7ce99d9a
       - name: Build and Load Docker Image For Testing
         id: build-for-testing
-        uses: docker/build-push-action@cb8fc7586f9ad9441b20c33e0f6e8b1b58d8b4c6
+        uses: docker/build-push-action@9e436ba9f2d7bcd1d038c8e55d039d37896ddc5d
         with:
           load: true
           tags: ${{ env.NAMESPACED_REGISTRY }}:test
@@ -139,7 +139,7 @@ jobs:
             --timeout "0h9m0s" \
             --sensitive-data
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -159,13 +159,13 @@ jobs:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
       - name: Docker Auth
-        uses: docker/login-action@5b7b28b1cc417bbd34cd8c225a957c9ce9adf7f2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
         with:
           username: 'apollograph'
           password: '${{ steps.gsm.outputs.token }}'
       - name: Build and Push Docker image
         id: push
-        uses: docker/build-push-action@cb8fc7586f9ad9441b20c33e0f6e8b1b58d8b4c6
+        uses: docker/build-push-action@9e436ba9f2d7bcd1d038c8e55d039d37896ddc5d
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
