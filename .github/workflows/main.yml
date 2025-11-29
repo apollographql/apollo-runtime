@@ -25,7 +25,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5
       - name: Add Tool To Parse Dockerfiles
         uses: taiki-e/install-action@parse-dockerfile
       - name: Get Versions From Dockerfile
@@ -59,7 +59,7 @@ jobs:
           echo "title=$STRIPPED_TITLE" >> "$GITHUB_OUTPUT"
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@032a4b3bda1b716928481836ac5bfe36e1feaad6
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
@@ -84,13 +84,13 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker
-        uses: docker/setup-docker-action@46897a62896535bdd1405daaf3939f80200ea25d
+        uses: docker/setup-docker-action@f2e530b12f4bab4483f63f0eebbde26dab3fdc5d
         with:
           daemon-config: |
             {
@@ -139,7 +139,7 @@ jobs:
             --timeout "0h9m0s" \
             --sensitive-data
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -159,7 +159,7 @@ jobs:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
       - name: Docker Auth
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
         with:
           username: 'apollograph'
           password: '${{ steps.gsm.outputs.token }}'
