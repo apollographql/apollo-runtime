@@ -1,5 +1,5 @@
 FROM otel/opentelemetry-collector-contrib@sha256:886722fe0f37af9d1fe24d29529253ec59fbf263b3b1df4facaf221373e19d23 AS otel
-FROM almalinux:10-minimal@sha256:cd55007b9804e36134bf488df6437171615c7a318addb13dd762375b39ef5629 AS final
+FROM almalinux:10-minimal@sha256:451d0aa4124932abd439c9dc62792ab4c388f1dc12ba219fbf761abb04afc338 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
@@ -8,7 +8,7 @@ ARG APOLLO_ROUTER_VERSION=2.9.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG APOLLO_MCP_SERVER_VERSION=1.2.1
 
-LABEL org.opencontainers.image.version=0.0.29
+LABEL org.opencontainers.image.version=0.0.30
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
 LABEL org.opencontainers.image.title="Apollo Runtime"
 LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
