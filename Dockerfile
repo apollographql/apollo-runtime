@@ -1,5 +1,4 @@
-FROM otel/opentelemetry-collector-contrib@sha256:886722fe0f37af9d1fe24d29529253ec59fbf263b3b1df4facaf221373e19d23 AS otel
-
+FROM otel/opentelemetry-collector-contrib@sha256:f051aff195ad50ed5ad9d95bcdd51d7258200c937def3797cf830366ed62e034 AS otel
 FROM almalinux:10-minimal@sha256:451d0aa4124932abd439c9dc62792ab4c388f1dc12ba219fbf761abb04afc338 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
@@ -30,16 +29,16 @@ RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 
 # Calculate which architecture dependent parts we require
 RUN case $TARGETARCH in \
-        amd64) \
-            wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz -O /tmp/s6.tar.xz \
-            ;; \
-        arm64) \
-            wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz -O /tmp/s6.tar.xz \
-            ;; \
-        *) \
-            echo "TARGETARCH $TARGETARCH not recognised, exiting..." \
-            exit 1 \
-            ;; \
+    amd64) \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz -O /tmp/s6.tar.xz \
+    ;; \
+    arm64) \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz -O /tmp/s6.tar.xz \
+    ;; \
+    *) \
+    echo "TARGETARCH $TARGETARCH not recognised, exiting..." \
+    exit 1 \
+    ;; \
     esac
 
 # Extract the architecture dependent parts
