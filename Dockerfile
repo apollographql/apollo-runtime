@@ -21,7 +21,7 @@ USER root
 WORKDIR /opt
 
 # Install dependencies to aid build
-RUN microdnf install -y tar xz wget which gzip libarchive && ln -sf /usr/bin/bsdtar /usr/bin/tar
+RUN microdnf install -y tar xz wget which gzip libarchive findutils && find / -name bsdtar && ln -sf $(find / -name bsdtar | head -n 1) /usr/bin/tar
 
 # Add all the s6 init supervise stuff.
 # Firstly download the no-arch bits
