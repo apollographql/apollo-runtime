@@ -1,6 +1,5 @@
 FROM otel/opentelemetry-collector-contrib@sha256:886722fe0f37af9d1fe24d29529253ec59fbf263b3b1df4facaf221373e19d23 AS otel
-FROM almalinux:9-minimal AS tar-source
-RUN microdnf install -y tar
+
 FROM almalinux:10-minimal@sha256:451d0aa4124932abd439c9dc62792ab4c388f1dc12ba219fbf761abb04afc338 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
@@ -22,8 +21,7 @@ USER root
 WORKDIR /opt
 
 # Install dependencies to aid build
-RUN microdnf install -y tar xz wget which gzip
-COPY --from=tar-source /usr/bin/tar /usr/bin/tar
+RUN microdnf install -y tar xz wget which gzip libarchive && ln -sf /usr/bin/bsdtar /usr/bin/tar
 
 # Add all the s6 init supervise stuff.
 # Firstly download the no-arch bits
