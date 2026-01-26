@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: [ 'main' ]
+    branches: ['main']
   pull_request:
 env:
   REGISTRY: ghcr.io
@@ -25,7 +25,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@c2d88d3ecc89a9ef08eebf45d9637801dcee7eb5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
       - name: Add Tool To Parse Dockerfiles
         uses: taiki-e/install-action@parse-dockerfile
       - name: Get Versions From Dockerfile
@@ -84,13 +84,13 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
+        uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker
-        uses: docker/setup-docker-action@f2e530b12f4bab4483f63f0eebbde26dab3fdc5d
+        uses: docker/setup-docker-action@e43656e248c0bd0647d3f5c195d116aacf6fcaf4
         with:
           daemon-config: |
             {
@@ -98,8 +98,10 @@ jobs:
                 "containerd-snapshotter": true
               }
             }
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@1583c0f09d26c58c59d25b0eef29792b7ce99d9a
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
       - name: Build and Load Docker Image For Testing
         id: build-for-testing
         uses: docker/build-push-action@9e436ba9f2d7bcd1d038c8e55d039d37896ddc5d
@@ -139,16 +141,16 @@ jobs:
             --timeout "0h9m0s" \
             --sensitive-data
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
+        uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Authenticate With GCP
         id: auth
-        uses: 'google-github-actions/auth@fc2174804b84f912b1f6d334e9463f484f1c552d'
+        uses: "google-github-actions/auth@fc2174804b84f912b1f6d334e9463f484f1c552d"
         with:
-          token_format: 'access_token'
+          token_format: "access_token"
           project_id: "platform-mgmt-service-e0izz"
           service_account: "runtime-container-ci@platform-mgmt-service-e0izz.iam.gserviceaccount.com"
           workload_identity_provider: "projects/865738624352/locations/global/workloadIdentityPools/github-d8bck/providers/github-d8bck"
@@ -159,10 +161,10 @@ jobs:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
       - name: Docker Auth
-        uses: docker/login-action@28fdb31ff34708d19615a74d67103ddc2ea9725c
+        uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
         with:
-          username: 'apollograph'
-          password: '${{ steps.gsm.outputs.token }}'
+          username: "apollograph"
+          password: "${{ steps.gsm.outputs.token }}"
       - name: Build and Push Docker image
         id: push
         uses: docker/build-push-action@9e436ba9f2d7bcd1d038c8e55d039d37896ddc5d
@@ -187,4 +189,3 @@ jobs:
           tag_name: ${{ steps.check-image.outputs.tag }}
           release_name: Apollo Runtime Container - v${{ steps.calculate-version.outputs.correct_version }} (Router - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}, MCP Server - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }})
           body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.check-image.outputs.tag }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ steps.check-image.outputs.tag }}.
-

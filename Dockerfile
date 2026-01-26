@@ -1,14 +1,14 @@
-FROM otel/opentelemetry-collector-contrib@sha256:886722fe0f37af9d1fe24d29529253ec59fbf263b3b1df4facaf221373e19d23 AS otel
-FROM almalinux:10-minimal@sha256:451d0aa4124932abd439c9dc62792ab4c388f1dc12ba219fbf761abb04afc338 AS final
+FROM otel/opentelemetry-collector-contrib@sha256:f051aff195ad50ed5ad9d95bcdd51d7258200c937def3797cf830366ed62e034 AS otel
+FROM almalinux:10-minimal@sha256:4f02be934419e0cc0b89f95be6463be8a7736eb75017f99ab66c9b0c59680cc6 AS final
 
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
-ARG APOLLO_ROUTER_VERSION=2.9.0
+ARG APOLLO_ROUTER_VERSION=2.10.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
-ARG APOLLO_MCP_SERVER_VERSION=1.3.0
+ARG APOLLO_MCP_SERVER_VERSION=1.6.0
 
-LABEL org.opencontainers.image.version=0.0.30
+LABEL org.opencontainers.image.version=0.0.31
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
 LABEL org.opencontainers.image.title="Apollo Runtime"
 LABEL org.opencontainers.image.description="A GraphQL Runtime for serving Supergraphs and enabling AI"
@@ -20,7 +20,7 @@ USER root
 WORKDIR /opt
 
 # Install dependencies to aid build
-RUN microdnf install -y tar xz wget which gzip
+RUN microdnf install -y tar xz wget which gzip bsdtar && ln -sf /usr/bin/bsdtar /usr/bin/tar
 
 # Add all the s6 init supervise stuff.
 # Firstly download the no-arch bits
@@ -29,16 +29,16 @@ RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
 
 # Calculate which architecture dependent parts we require
 RUN case $TARGETARCH in \
-        amd64) \
-            wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz -O /tmp/s6.tar.xz \
-            ;; \
-        arm64) \
-            wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz -O /tmp/s6.tar.xz \
-            ;; \
-        *) \
-            echo "TARGETARCH $TARGETARCH not recognised, exiting..." \
-            exit 1 \
-            ;; \
+    amd64) \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz -O /tmp/s6.tar.xz \
+    ;; \
+    arm64) \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-aarch64.tar.xz -O /tmp/s6.tar.xz \
+    ;; \
+    *) \
+    echo "TARGETARCH $TARGETARCH not recognised, exiting..." \
+    exit 1 \
+    ;; \
     esac
 
 # Extract the architecture dependent parts
