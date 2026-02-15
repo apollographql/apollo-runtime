@@ -4,9 +4,9 @@ FROM almalinux:10-minimal@sha256:4f02be934419e0cc0b89f95be6463be8a7736eb75017f99
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
-ARG APOLLO_ROUTER_VERSION=2.10.0
+ARG APOLLO_ROUTER_VERSION=2.11.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
-ARG APOLLO_MCP_SERVER_VERSION=1.6.0
+ARG APOLLO_MCP_SERVER_VERSION=1.7.0
 
 LABEL org.opencontainers.image.version=0.0.31
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
