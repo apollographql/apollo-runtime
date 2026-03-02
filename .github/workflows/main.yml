@@ -44,11 +44,11 @@ jobs:
       - name: Compute Runtime Version
         id: compute-runtime-version
         run: |
-          LATEST_PATCH=$(git tag -l '0.0.*' | sed -n 's/^0\.0\.\([0-9]*\).*/\1/p' | sort -rn | head -n1)
-          if [ -z "$LATEST_PATCH" ]; then
+          LATEST_VERSION=$(git tag -l '0.0.*' | xargs npx -y semver --coerce --ltr 2>/dev/null | tail -1)
+          if [ -z "$LATEST_VERSION" ]; then
             NEXT_VERSION="0.0.1"
           else
-            NEXT_VERSION="0.0.$((LATEST_PATCH + 1))"
+            NEXT_VERSION=$(npx -y semver -i patch "$LATEST_VERSION")
           fi
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "runtime_version=${NEXT_VERSION}-PR${{ github.event.number }}" >> "$GITHUB_OUTPUT"
