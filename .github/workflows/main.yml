@@ -7,7 +7,13 @@ concurrency:
 on:
   push:
     branches: ['main']
+    paths-ignore:
+      - '*.md'
+      - 'examples/**'
   pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'examples/**'
 env:
   REGISTRY: ghcr.io
   NAMESPACED_REGISTRY: ghcr.io/apollographql/apollo-runtime
@@ -26,6 +32,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 0
       - name: Add Tool To Parse Dockerfiles
         uses: taiki-e/install-action@parse-dockerfile
       - name: Get Versions From Dockerfile
@@ -33,20 +41,20 @@ jobs:
         run: |
           VERSIONS=$(parse-dockerfile Dockerfile | jq -cr '[.instructions[] | select(.kind=="LABEL" or .kind=="ARG") | select(.arguments.value | contains("org.opencontainers.image") or startswith("APOLLO_")).arguments.value | match("([^=]*)=(.*)") | .captures | {(.[0].string) : .[1].string}] | add')
           echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
-      - name: Check Image to Build Post-Merge Does Not Already Exist
-        id: check-image
+      - name: Compute Runtime Version
+        id: compute-runtime-version
         run: |
-          TAG=${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'] }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
-          if docker manifest inspect ${{ env.NAMESPACED_REGISTRY }}:$TAG > /dev/null; then
-            echo "The tag "${{ env.NAMESPACED_REGISTRY }}:$TAG" already exists in the repository. Do you need to bump the version in the Dockerfile?"
-            exit 1
+          LATEST_PATCH=$(git tag -l '0.0.*' | sed -n 's/^0\.0\.\([0-9]*\).*/\1/p' | sort -rn | head -n1)
+          if [ -z "$LATEST_PATCH" ]; then
+            NEXT_VERSION="0.0.1"
+          else
+            NEXT_VERSION="0.0.$((LATEST_PATCH + 1))"
           fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-      - name: Calculate Correct Version
-        id: calculate-version
-        run: |
-          CORRECT_VERSION=${{ github.event_name == 'pull_request' && format('{0}-PR{1}', fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'], github.event.number) || fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.version'] }}
-          echo "correct_version=$CORRECT_VERSION" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "runtime_version=${NEXT_VERSION}-PR${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "runtime_version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Remove Quotes From Title & Description
         env:
           DESCRIPTION: ${{ fromJSON(steps.get-versions.outputs.versions)['org.opencontainers.image.description'] }}
@@ -67,20 +75,20 @@ jobs:
             ${{ env.NAMESPACED_REGISTRY }}
             apollograph/apollo-runtime
           tags: |
-            type=semver,pattern={{version}},value=${{ steps.calculate-version.outputs.correct_version }}
-            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}
-            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
-            type=raw,value=${{ steps.calculate-version.outputs.correct_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+            type=semver,pattern={{version}},value=${{ steps.compute-runtime-version.outputs.runtime_version }}
+            type=raw,value=${{ steps.compute-runtime-version.outputs.runtime_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}
+            type=raw,value=${{ steps.compute-runtime-version.outputs.runtime_version }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+            type=raw,value=${{ steps.compute-runtime-version.outputs.runtime_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
             type=raw,value=latest,enable={{is_default_branch}}
             type=raw,value=latest_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }},enable={{is_default_branch}}
             type=raw,value=latest_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }},enable={{is_default_branch}}
             type=raw,value=latest_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }},enable={{is_default_branch}}
           labels: |
-            org.opencontainers.image.version=${{ steps.calculate-version.outputs.correct_version }}
+            org.opencontainers.image.version=${{ steps.compute-runtime-version.outputs.runtime_version }}
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
           annotations: |
-            org.opencontainers.image.version=${{ steps.calculate-version.outputs.correct_version }}
+            org.opencontainers.image.version=${{ steps.compute-runtime-version.outputs.runtime_version }}
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
@@ -186,6 +194,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.check-image.outputs.tag }}
-          release_name: Apollo Runtime Container - v${{ steps.calculate-version.outputs.correct_version }} (Router - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}, MCP Server - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }})
-          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.check-image.outputs.tag }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ steps.check-image.outputs.tag }}.
+          tag_name: ${{ steps.compute-runtime-version.outputs.runtime_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}
+          release_name: Apollo Runtime Container - v${{ steps.compute-runtime-version.outputs.runtime_version }} (Router - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}, MCP Server - v${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }})
+          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ steps.compute-runtime-version.outputs.runtime_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ steps.compute-runtime-version.outputs.runtime_version }}_router${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_ROUTER_VERSION }}_mcp-server${{ fromJSON(steps.get-versions.outputs.versions).APOLLO_MCP_SERVER_VERSION }}.
