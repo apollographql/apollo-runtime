@@ -41,14 +41,24 @@ jobs:
         run: |
           VERSIONS=$(parse-dockerfile Dockerfile | jq -cr '[.instructions[] | select(.kind=="LABEL" or .kind=="ARG") | select(.arguments.value | contains("org.opencontainers.image") or startswith("APOLLO_")).arguments.value | match("([^=]*)=(.*)") | .captures | {(.[0].string) : .[1].string}] | add')
           echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
+      - name: Get Latest Version Tag
+        id: get-latest-version
+        run: |
+          LATEST_VERSION=$(git tag -l '0.0.*' | sort -V | tail -1)
+          echo "version=${LATEST_VERSION}" >> "$GITHUB_OUTPUT"
+      - name: Compute Next Semver
+        id: next-semver
+        if: steps.get-latest-version.outputs.version != ''
+        uses: WyriHaximus/github-action-next-semvers@18aa9ed4152808ab99b88d71f5481e41f8d89930
+        with:
+          version: ${{ steps.get-latest-version.outputs.version }}
       - name: Compute Runtime Version
         id: compute-runtime-version
         run: |
-          LATEST_VERSION=$(git tag -l '0.0.*' | xargs npx -y semver --coerce --ltr 2>/dev/null | tail -1)
-          if [ -z "$LATEST_VERSION" ]; then
+          if [ -z "${{ steps.get-latest-version.outputs.version }}" ]; then
             NEXT_VERSION="0.0.1"
           else
-            NEXT_VERSION=$(npx -y semver -i patch "$LATEST_VERSION")
+            NEXT_VERSION="${{ steps.next-semver.outputs.patch }}"
           fi
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "runtime_version=${NEXT_VERSION}-PR${{ github.event.number }}" >> "$GITHUB_OUTPUT"
