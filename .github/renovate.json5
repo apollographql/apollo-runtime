@@ -2,6 +2,8 @@
   extends: [
     'github>apollographql/renovate-config-apollo-open-source:default.json5',
   ],
+  automerge: true,
+  platformAutomerge: true,
   customManagers: [
     {
       customType: 'regex',
@@ -24,9 +26,5 @@
         groupSlug: 'gha-digests',
       },
     },
-    {
-      "matchPackageNames": ["apollographql/router"],
-      "automerge": true
-    }
   ],
 }
