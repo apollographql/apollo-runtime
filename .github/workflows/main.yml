@@ -44,7 +44,7 @@ jobs:
       - name: Get Latest Version Tag
         id: get-latest-version
         run: |
-          LATEST_VERSION=$(git tag -l '0.0.*' | sort -V | tail -1)
+          LATEST_VERSION=$(git tag -l '0.0.*' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' | sort -uV | tail -1)
           echo "version=${LATEST_VERSION}" >> "$GITHUB_OUTPUT"
       - name: Compute Next Semver
         id: next-semver
