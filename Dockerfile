@@ -6,7 +6,7 @@ ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
 ARG APOLLO_ROUTER_VERSION=2.12.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
-ARG APOLLO_MCP_SERVER_VERSION=1.8.0
+ARG APOLLO_MCP_SERVER_VERSION=1.8.2
 
 LABEL org.opencontainers.image.vendor="Apollo GraphQL"
 LABEL org.opencontainers.image.title="Apollo Runtime"
