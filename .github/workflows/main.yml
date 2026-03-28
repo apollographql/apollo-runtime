@@ -77,7 +77,7 @@ jobs:
           echo "title=$STRIPPED_TITLE" >> "$GITHUB_OUTPUT"
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@11079342065fb7d2c3b37cb799ab6ecc01ad1bb2
+        uses: docker/metadata-action@4378dc6be7f72231dfe78ac7e0364a44f1c9f54b
         env:
           DOCKER_METADATA_PR_HEAD_SHA: true
         with:
@@ -102,13 +102,13 @@ jobs:
             org.opencontainers.image.description=${{ steps.remove-quotes.outputs.description }} 
             org.opencontainers.image.title=${{ steps.remove-quotes.outputs.title }}
       - name: Log in to the Container Registry
-        uses: docker/login-action@da5b89b92c1be57a07eeed1334a0728b94145654
+        uses: docker/login-action@a0d57b8e43b6ef1cca20559d68cec2227e63fccd
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker
-        uses: docker/setup-docker-action@d25408f91355f4404d6200cc35143e527fdd5401
+        uses: docker/setup-docker-action@9d5b7667da0bfb2b97a34cc5758fa9bf41bbd6bb
         with:
           daemon-config: |
             {
@@ -117,12 +117,12 @@ jobs:
               }
             }
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@6632d370eaa94c36e362c994b934b79877123e91
+        uses: docker/setup-qemu-action@6804d313191b81cfc5feb5065848250370954232
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d91f340399fb2345e3e45f5461e116862b08261d
+        uses: docker/setup-buildx-action@172dff065fb2e54aaed577fd667975cd412819fb
       - name: Build and Load Docker Image For Testing
         id: build-for-testing
-        uses: docker/build-push-action@de308676347136a77704e0f257298c8f1b30054f
+        uses: docker/build-push-action@b66d8774c665b789105b440514f0c97e6f19b06f
         with:
           load: true
           tags: ${{ env.NAMESPACED_REGISTRY }}:test
@@ -159,7 +159,7 @@ jobs:
             --timeout "0h9m0s" \
             --sensitive-data
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@da5b89b92c1be57a07eeed1334a0728b94145654
+        uses: docker/login-action@a0d57b8e43b6ef1cca20559d68cec2227e63fccd
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -179,13 +179,13 @@ jobs:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
       - name: Docker Auth
-        uses: docker/login-action@da5b89b92c1be57a07eeed1334a0728b94145654
+        uses: docker/login-action@a0d57b8e43b6ef1cca20559d68cec2227e63fccd
         with:
           username: "apollograph"
           password: "${{ steps.gsm.outputs.token }}"
       - name: Build and Push Docker image
         id: push
-        uses: docker/build-push-action@de308676347136a77704e0f257298c8f1b30054f
+        uses: docker/build-push-action@b66d8774c665b789105b440514f0c97e6f19b06f
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
