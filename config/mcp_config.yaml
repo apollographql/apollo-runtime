@@ -47,9 +47,9 @@ operations:
 schema:
   source: uplink
 
-# Configure the MCP server to listen for streamable HTTP messages on port 5000
+# Configure the MCP server to listen for streamable HTTP messages on port 8000
 # for all addresses
 transport:
   type: streamable_http
   address: "0.0.0.0"
-  port: 5000
+  port: 8000
