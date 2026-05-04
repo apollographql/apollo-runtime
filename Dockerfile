@@ -69,6 +69,9 @@ RUN mkdir -p /etc/s6-overlay/s6-rc.d/user/contents.d/router
 # Install our mcp server
 RUN curl -sSL "https://mcp.apollo.dev/download/nix/v${APOLLO_MCP_SERVER_VERSION}" | sh
 
+# Add a default copy of the mcp config file
+ADD config/mcp_config.yaml /config/mcp_config.yaml
+
 # Install our mcp service definition
 ADD s6_service_definitions/mcp /etc/s6-overlay/s6-rc.d/mcp
 
