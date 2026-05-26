@@ -107,15 +107,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up Docker
-        uses: docker/setup-docker-action@9d5b7667da0bfb2b97a34cc5758fa9bf41bbd6bb
-        with:
-          daemon-config: |
-            {
-              "features": {
-                "containerd-snapshotter": true
-              }
-            }
       - name: Set up QEMU
         uses: docker/setup-qemu-action@6804d313191b81cfc5feb5065848250370954232
       - name: Set up Docker Buildx
@@ -126,38 +117,19 @@ jobs:
         with:
           load: true
           tags: ${{ env.NAMESPACED_REGISTRY }}:test
-          platforms: ${{ env.PLATFORMS }}
-      - name: Install Wiz CLI
-        shell: bash
-        working-directory: ${{ runner.temp }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install gpg
-          curl -Lo wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64
-          curl -Lo wizcli-sha256 https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64-sha256
-          curl -Lo wizcli-sha256.sig https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64-sha256.sig
-          curl -Lo wiz_public_key.asc https://downloads.wiz.io/wizcli/public_key.asc
-          gpg --import wiz_public_key.asc
-          gpg --verify wizcli-sha256.sig wizcli-sha256
-          echo "$(cat wizcli-sha256) wizcli" | sha256sum --check
-          chmod +x wizcli
-      - name: Authenticate Wiz CLI
-        shell: bash
-        working-directory: ${{ runner.temp }}
-        run: |
-          ./wizcli auth --id ${{ secrets.WIZ_CLIENT_ID }} --secret ${{ secrets.WIZ_CLIENT_SECRET }}
+          platforms: linux/amd64
       - name: Scan Image
-        shell: bash
-        working-directory: ${{ runner.temp }}
-        run: |
-          ./wizcli docker scan \
-            --image ${{ env.NAMESPACED_REGISTRY }}:test \
-            --dockerfile ${{ github.workspace }}/Dockerfile \
-            --policy "Apollo-Default-Vulnerabilities-Policy" \
-            --sbom-format spdx-json \
-            --sbom-output-file sbom.json \
-            --timeout "0h9m0s" \
-            --sensitive-data
+        uses: docker://public-registry.wiz.io/wiz-app/wizcli@sha256:408d7651cf2bb05f614d04605d34a9639c806329d227022d988722679fadc0f9
+        with:
+          args: >-
+            scan container-image ${{ env.NAMESPACED_REGISTRY }}:test
+            --dockerfile Dockerfile
+            --policies "Apollo-Default-Vulnerabilities-Policy"
+            --sbom-format spdx-json
+            --sbom-output-file sbom.json
+            --timeout "0h9m0s"
+            --client-id ${{ secrets.WIZ_CLIENT_ID_V1 }}
+            --client-secret ${{ secrets.WIZ_CLIENT_SECRET_V1 }}
       - name: Log in to the GitHub Container Registry
         uses: docker/login-action@a0d57b8e43b6ef1cca20559d68cec2227e63fccd
         with:
