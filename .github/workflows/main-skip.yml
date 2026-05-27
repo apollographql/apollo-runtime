@@ -1,0 +1,19 @@
+name: Build Apollo Runtime Container (Skip)
+
+# Sibling stub for the real `main.yml` workflow. Triggers on the paths
+# the real workflow ignores so that branch protection's required check
+# resolves on PRs that only touch docs or examples. Job name must stay
+# in lockstep with `main.yml`'s scan job.
+
+on:
+  pull_request:
+    paths:
+      - '*.md'
+      - 'examples/**'
+
+jobs:
+  scan:
+    name: Wiz Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docs/examples-only change; real scan skipped."
