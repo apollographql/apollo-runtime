@@ -1,87 +1,90 @@
 name: Build Apollo Runtime Container
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 on:
+  pull_request:
+    paths-ignore:
+      - '*.md'
+      - 'examples/**'
   push:
     branches: ['main']
     paths-ignore:
       - '*.md'
       - 'examples/**'
-  pull_request:
-    paths-ignore:
-      - '*.md'
-      - 'examples/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
-  NAMESPACED_REGISTRY: ghcr.io/apollographql/apollo-runtime
   NAMESPACED_DOCKERHUB_REGISTRY: apollograph/apollo-runtime
+  NAMESPACED_REGISTRY: ghcr.io/apollographql/apollo-runtime
 
 jobs:
-  compute-versions:
+  compute_versions:
     name: Compute Versions
     runs-on: ubuntu-latest
     outputs:
-      runtime_version: ${{ steps.runtime-version.outputs.runtime_version }}
-      router_version: ${{ steps.dockerfile-versions.outputs.router }}
-      mcp_server_version: ${{ steps.dockerfile-versions.outputs.mcp }}
       composite_version: ${{ steps.composite.outputs.composite_version }}
+      mcp_server_version: ${{ steps.dockerfile_versions.outputs.mcp }}
       release_title: ${{ steps.composite.outputs.release_title }}
+      router_version: ${{ steps.dockerfile_versions.outputs.router }}
+      runtime_version: ${{ steps.runtime_version.outputs.runtime_version }}
       tags: ${{ steps.tags.outputs.tags }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           fetch-depth: 0
+
       - name: Add tool to parse Dockerfile
         uses: taiki-e/install-action@parse-dockerfile
+
       - name: Extract dependency versions from Dockerfile
-        id: dockerfile-versions
+        id: dockerfile_versions
         run: |
           VERSIONS=$(parse-dockerfile Dockerfile | jq -cr '[.instructions[] | select(.kind=="LABEL" or .kind=="ARG") | select(.arguments.value | contains("org.opencontainers.image") or startswith("APOLLO_")).arguments.value | match("([^=]*)=(.*)") | .captures | {(.[0].string) : .[1].string}] | add')
           echo "router=$(echo "$VERSIONS" | jq -r '.APOLLO_ROUTER_VERSION')" >> "$GITHUB_OUTPUT"
           echo "mcp=$(echo "$VERSIONS" | jq -r '.APOLLO_MCP_SERVER_VERSION')" >> "$GITHUB_OUTPUT"
+
       - name: Get latest version tag
-        id: latest-tag
+        id: latest_tag
         run: |
           LATEST_VERSION=$(git tag -l '0.0.*' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' | sort -uV | tail -1)
           echo "version=${LATEST_VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: Compute next semver
-        id: next-semver
-        if: steps.latest-tag.outputs.version != ''
+        id: next_semver
+        if: steps.latest_tag.outputs.version != ''
         uses: WyriHaximus/github-action-next-semvers@18aa9ed4152808ab99b88d71f5481e41f8d89930
         with:
-          version: ${{ steps.latest-tag.outputs.version }}
+          version: ${{ steps.latest_tag.outputs.version }}
+
       - name: Compute runtime version
-        id: runtime-version
+        id: runtime_version
         run: |
-          if [ -z "${{ steps.latest-tag.outputs.version }}" ]; then
+          if [ -z "${{ steps.latest_tag.outputs.version }}" ]; then
             NEXT_VERSION="0.0.1"
           else
-            NEXT_VERSION="${{ steps.next-semver.outputs.patch }}"
+            NEXT_VERSION="${{ steps.next_semver.outputs.patch }}"
           fi
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "runtime_version=${NEXT_VERSION}-PR${{ github.event.number }}" >> "$GITHUB_OUTPUT"
           else
             echo "runtime_version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
           fi
+
       - name: Compute composite version and release title
         id: composite
-        env:
-          RV: ${{ steps.runtime-version.outputs.runtime_version }}
-          ROUTER: ${{ steps.dockerfile-versions.outputs.router }}
-          MCP: ${{ steps.dockerfile-versions.outputs.mcp }}
         run: |
           echo "composite_version=${RV}_router${ROUTER}_mcp-server${MCP}" >> "$GITHUB_OUTPUT"
           echo "release_title=Apollo Runtime Container - v${RV} (Router - v${ROUTER}, MCP Server - v${MCP})" >> "$GITHUB_OUTPUT"
+        env:
+          MCP: ${{ steps.dockerfile_versions.outputs.mcp }}
+          ROUTER: ${{ steps.dockerfile_versions.outputs.router }}
+          RV: ${{ steps.runtime_version.outputs.runtime_version }}
+
       - name: Compose publish tag list
         id: tags
-        env:
-          RV: ${{ steps.runtime-version.outputs.runtime_version }}
-          ROUTER: ${{ steps.dockerfile-versions.outputs.router }}
-          MCP: ${{ steps.dockerfile-versions.outputs.mcp }}
         run: |
           {
             echo 'tags<<EOF'
@@ -95,6 +98,10 @@ jobs:
             echo "type=raw,value=latest_router${ROUTER}_mcp-server${MCP}"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
+        env:
+          MCP: ${{ steps.dockerfile_versions.outputs.mcp }}
+          ROUTER: ${{ steps.dockerfile_versions.outputs.router }}
+          RV: ${{ steps.runtime_version.outputs.runtime_version }}
 
   build:
     name: Build and Push to Internal Registry
@@ -116,6 +123,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
       - name: Resolve image SHA tag
         id: sha
         run: |
@@ -124,12 +132,14 @@ jobs:
           else
             echo "tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
+
       - name: Pull image from internal registry
         id: pull
         uses: apollographql/release-tooling/pull-image@9412d54a53b46cc3ad53a9ff2869d3e23a147a71
         with:
           image_name: apollo-runtime
           tag: ${{ steps.sha.outputs.tag }}
+
       - name: Scan Image
         uses: docker://public-registry.wiz.io/wiz-app/wizcli:1.48.0@sha256:1b4b201b26fab4710e6dae43a1fed275d12e7cbaa5847c7cd9e09a88bf82cbac
         with:
@@ -145,7 +155,7 @@ jobs:
 
   release_dockerhub:
     name: Publish to DockerHub
-    needs: [compute-versions, scan]
+    needs: [compute_versions, scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -158,69 +168,73 @@ jobs:
         id: publish
         uses: apollographql/release-tooling/release-dockerhub@9412d54a53b46cc3ad53a9ff2869d3e23a147a71
         with:
-          image_name: apollo-runtime
           commit_sha: ${{ github.sha }}
+          image_name: apollo-runtime
           tag_latest: 'false'
-          tags: ${{ needs.compute-versions.outputs.tags }}
+          tags: ${{ needs.compute_versions.outputs.tags }}
 
   release_ghcr:
     name: Publish to GHCR
-    needs: [compute-versions, scan]
+    needs: [compute_versions, scan]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
       id-token: write
+      packages: write
     steps:
       - name: Publish to GHCR
         uses: apollographql/release-tooling/release-ghcr@9412d54a53b46cc3ad53a9ff2869d3e23a147a71
         with:
-          image_name: apollo-runtime
           commit_sha: ${{ github.sha }}
-          tags: ${{ needs.compute-versions.outputs.tags }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          image_name: apollo-runtime
+          tags: ${{ needs.compute_versions.outputs.tags }}
 
   release:
     name: Attest and Create GitHub Release
-    needs: [compute-versions, release_dockerhub, release_ghcr]
+    needs: [compute_versions, release_dockerhub, release_ghcr]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       attestations: write
+      contents: write
       id-token: write
     steps:
       - name: Authenticate with GCP
-        id: gcp-auth
+        id: gcp_auth
         uses: google-github-actions/auth@fc2174804b84f912b1f6d334e9463f484f1c552d
         with:
-          token_format: access_token
           project_id: platform-mgmt-service-e0izz
           service_account: release-tooling-automation@platform-mgmt-service-e0izz.iam.gserviceaccount.com
+          token_format: access_token
           workload_identity_provider: projects/865738624352/locations/global/workloadIdentityPools/github-d8bck/providers/github-d8bck
+
       - name: Fetch DockerHub credential
         id: gsm
         uses: google-github-actions/get-secretmanager-secrets@bc9c54b29fdffb8a47776820a7d26e77b379d262
         with:
           secrets: |-
             token:platform-prod-service-q8dyj/docker_hub_push_token
+
       - name: Log in to DockerHub
         uses: docker/login-action@6862ffc5ab2cdb4405cf318a62a6f4c066e2298b
         with:
-          username: apollograph
           password: ${{ steps.gsm.outputs.token }}
+          username: apollograph
+
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v4
         with:
-          subject-name: index.docker.io/${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}
-          subject-digest: ${{ needs.release_dockerhub.outputs.digest }}
           push-to-registry: true
+          subject-digest: ${{ needs.release_dockerhub.outputs.digest }}
+          subject-name: index.docker.io/${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}
+
       - name: Create GitHub Release
         uses: comnoco/create-release-action@6ac85b5a67d93e181c1a8f97072e2e3ffc582ec4
+        with:
+          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ needs.compute_versions.outputs.composite_version }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ needs.compute_versions.outputs.composite_version }}.
+          release_name: ${{ needs.compute_versions.outputs.release_title }}
+          tag_name: ${{ needs.compute_versions.outputs.composite_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ needs.compute-versions.outputs.composite_version }}
-          release_name: ${{ needs.compute-versions.outputs.release_title }}
-          body: Find the latest release at ${{ env.NAMESPACED_REGISTRY }}:${{ needs.compute-versions.outputs.composite_version }} or ${{ env.NAMESPACED_DOCKERHUB_REGISTRY }}:${{ needs.compute-versions.outputs.composite_version }}.

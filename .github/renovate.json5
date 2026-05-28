@@ -14,7 +14,25 @@
       matchStrings: [
         '# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))?(?: extractVersion=(?<extractVersion>.*))?(?:^|\\r\\n|\\r|\\n|$)(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)(?:^|\\r\\n|\\r|\\n|$)',
       ],
-    }
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)lefthook\\.ya?ml$/',
+      ],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>\\S+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+run:[^\\n]*?:(?<currentValue>\\d+\\.\\d+\\.\\d+[^\\s\\\'\"]*)',
+      ],
+    },
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^\\.github/workflows/[^/]+\\.ya?ml$/',
+      ],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>\\S+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s+version:\\s*[\\\'\"]?(?<currentValue>[^\\s\\\'\"]+)',
+      ],
+    },
   ],
   packageRules: [
     {
@@ -25,6 +43,14 @@
         groupName: 'GitHub Actions Digests',
         groupSlug: 'gha-digests',
       },
+    },
+    {
+      matchPackageNames: [
+        'jonathanrainer/ghafmt',
+        'ghcr.io/jonathanrainer/ghafmt',
+      ],
+      groupName: 'ghafmt',
+      groupSlug: 'ghafmt',
     },
   ],
 }
