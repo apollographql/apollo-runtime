@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  commands:
+    ghafmt:
+      glob: ".github/workflows/*.{yaml,yml}"
+      run: docker run --rm -v "$PWD":/work --workdir /work ghcr.io/jonathanrainer/ghafmt:0.1.5 --mode=check /work/.github/workflows/
+
+    actionlint:
+      glob: ".github/workflows/*.{yaml,yml}"
+      run: docker run --rm -v "$PWD":/repo --workdir /repo rhysd/actionlint:1.7.12 -color {staged_files}
