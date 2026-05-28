@@ -131,7 +131,7 @@ jobs:
           image_name: apollo-runtime
           tag: ${{ steps.sha.outputs.tag }}
       - name: Scan Image
-        uses: docker://public-registry.wiz.io/wiz-app/wizcli@sha256:408d7651cf2bb05f614d04605d34a9639c806329d227022d988722679fadc0f9
+        uses: docker://public-registry.wiz.io/wiz-app/wizcli:1.48.0@sha256:1b4b201b26fab4710e6dae43a1fed275d12e7cbaa5847c7cd9e09a88bf82cbac
         with:
           args: >-
             scan container-image ${{ steps.pull.outputs.image_reference }}
