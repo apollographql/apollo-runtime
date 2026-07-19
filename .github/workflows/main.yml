@@ -141,7 +141,7 @@ jobs:
           tag: ${{ steps.sha.outputs.tag }}
 
       - name: Scan Image
-        uses: docker://public-registry.wiz.io/wiz-app/wizcli:1.59.0@sha256:fb03a7a8be9da6c619df95a7c6e0d6ef33b4371b8763b43ea624fce38a6cbf96
+        uses: docker://public-registry.wiz.io/wiz-app/wizcli:1.62.0@sha256:7f28f7275bbd008ff07764fa1e873ae12f49c5198dfd474248842e0ec11c61c6
         with:
           args: >-
             scan container-image ${{ steps.pull.outputs.image_reference }}
