@@ -4,7 +4,7 @@ FROM almalinux:10-minimal@sha256:7127d3a958a0ba8bb673d7b4cd378c11052404ce1897940
 # renovate: datasource=github-releases depName=just-containers/s6-overlay
 ARG S6_OVERLAY_VERSION=3.2.1.0
 # renovate: datasource=github-releases depName=apollographql/router
-ARG APOLLO_ROUTER_VERSION=2.18.0
+ARG APOLLO_ROUTER_VERSION=2.19.0
 # renovate: datasource=github-releases depName=apollographql/apollo-mcp-server
 ARG APOLLO_MCP_SERVER_VERSION=2.0.0
 
