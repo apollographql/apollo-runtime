@@ -4,7 +4,7 @@ pre-commit:
     ghafmt:
       glob: ".github/workflows/*.{yaml,yml}"
       # renovate: datasource=docker depName=ghcr.io/jonathanrainer/ghafmt
-      run: docker run --rm -v "$PWD":/work --workdir /work ghcr.io/jonathanrainer/ghafmt:0.1.5 --mode=check /work/.github/workflows/
+      run: docker run --rm -v "$PWD":/work --workdir /work ghcr.io/jonathanrainer/ghafmt:0.2.0 --mode=check /work/.github/workflows/
 
     actionlint:
       glob: ".github/workflows/*.{yaml,yml}"
