@@ -35,6 +35,6 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: Run ghafmt
-        uses: jonathanrainer/ghafmt@6ec275ee8f553b37843449b28f0e4e29989ee559 # v0.2.0
+        uses: jonathanrainer/ghafmt@9ed43a3a08c128427d37a69d209f1385a2b6e161 # v0.2.1
         with:
           mode: check
